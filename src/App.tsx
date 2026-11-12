@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { soundFX } from './audio/AudioManager';
 import { ChallengeOverlay } from './challenges/ChallengeOverlay';
+import { EmergencyRepair } from './challenges/EmergencyRepair';
 import { CollisionSystem } from './game/CollisionSystem';
 import { InteractionSystem } from './game/InteractionSystem';
 import {
@@ -42,6 +43,7 @@ export default function App() {
     SaveManager.hasSavedMission()
   );
   const [activeChallenge, setActiveChallenge] = useState<ChallengeId | null>(null);
+  const [activeRepair, setActiveRepair] = useState<ChallengeId | null>(null);
   const [showScienceModal, setShowScienceModal] = useState<boolean>(false);
   const [showObservationModal, setShowObservationModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
@@ -71,6 +73,7 @@ export default function App() {
   activeModalRef.current =
     inMenu ||
     Boolean(activeChallenge) ||
+    Boolean(activeRepair) ||
     Boolean(activeDialogue) ||
     showObservationModal ||
     showScienceModal ||
@@ -96,7 +99,7 @@ export default function App() {
     if (playerRef.current) {
       playerRef.current.setEnabled(!activeModalRef.current);
     }
-  }, [inMenu, activeChallenge, activeDialogue, showObservationModal, showScienceModal, showSettingsModal, showGuidebookModal, missionState.stormEvaluated]);
+  }, [inMenu, activeChallenge, activeRepair, activeDialogue, showObservationModal, showScienceModal, showSettingsModal, showGuidebookModal, missionState.stormEvaluated]);
 
   const updateMissionState = useCallback(
     (
@@ -172,7 +175,9 @@ export default function App() {
 
       if (t.actionType === 'open_challenge' && t.challengeId) {
         soundFX.playClick(680);
-        setActiveChallenge(t.challengeId);
+        const repaired = stateRef.current.decisions.some((entry) => entry.system === 'Mini-game repair' && entry.action === t.challengeId);
+        if (repaired) setActiveChallenge(t.challengeId);
+        else setActiveRepair(t.challengeId);
         return;
       }
 
@@ -258,7 +263,9 @@ export default function App() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Escape') {
-        if (showObservationModal) {
+        if (activeRepair) {
+          setActiveRepair(null);
+        } else if (showObservationModal) {
           setShowObservationModal(false);
         } else if (activeDialogue) {
           setActiveDialogue(null);
@@ -296,6 +303,7 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [
     activeChallenge,
+    activeRepair,
     activeDialogue,
     showObservationModal,
     showScienceModal,
@@ -509,6 +517,7 @@ export default function App() {
     setMissionState(fresh);
     setHasSavedGame(true);
     setActiveChallenge(null);
+    setActiveRepair(null);
     setShowObservationModal(false);
     setNovaMessage(StoryDirector.getOpeningSequence()[0]);
     playerRef.current?.teleportToRoom('hub');
@@ -627,6 +636,26 @@ export default function App() {
         <DialogueModal
           dialogue={activeDialogue}
           onClose={() => setActiveDialogue(null)}
+        />
+      )}
+
+      {/* Physical repair puzzle: learn through play before system-level decisions. */}
+      {activeRepair && (
+        <EmergencyRepair
+          challengeId={activeRepair}
+          onClose={() => setActiveRepair(null)}
+          onComplete={() => {
+            const completed = activeRepair;
+            updateMissionState((draft) => {}, {
+              system: 'Mini-game repair',
+              action: completed,
+              impact: 'Restored the educational system connection before evaluating resource trade-offs.',
+            });
+            setActiveRepair(null);
+            setActiveChallenge(completed);
+            setNovaMessage({ id: 'repair-' + completed, speaker: 'NOVA', text: 'Great work! The equipment is connected. Now let\'s check how this system affects the rest of our Moon base.', priority: 'success' });
+            soundFX.playSuccessChord();
+          }}
         />
       )}
 
