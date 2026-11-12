@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import nasaDataset from '../science/nasaDataset.json';
 import {
   AdventureState, ChoiceId, NASA_OBSERVATIONS, STORY_STAGES, StoryBranch,
   adventureEnding, exampleSolarPowerKw, freeFallMeters,
@@ -173,7 +174,9 @@ export const AdventureAcademy:React.FC<Props>=({onClose,onDecision,onExplore})=>
               </section>}
               {stage===5&&<div className="rounded-2xl border border-[#e1b4ad]/30 bg-[#3b2936]/60 p-4">
                 <p className="text-xs font-bold tracking-wider text-[#ffd0b4]">REAL NASA HISTORICAL RECORD · MAY 2024</p>
-                <p className="mt-2 text-3xl font-semibold">Kp 9 <span className="text-sm font-normal text-[#e1b6b1]">Earth's measured geomagnetic activity</span></p>
+                <p className="mt-2 text-3xl font-semibold">Kp {nasaDataset.historicalEvent.observedEarthKp} <span className="text-sm font-normal text-[#e1b6b1]">Earth's measured geomagnetic activity</span></p>
+                <p className="mt-2 text-xs leading-5 text-[#f2d9d5]">NASA DONKI event {nasaDataset.historicalEvent.id} · {new Date(nasaDataset.historicalEvent.observedIntervalUTC.start).toUTCString()} – {new Date(nasaDataset.historicalEvent.observedIntervalUTC.end).toUTCString()}</p>
+                <a href={nasaDataset.historicalEvent.source} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-xs font-semibold text-[#b7dbf1] underline underline-offset-4">Open NASA event notification ↗</a>
                 <p className="mt-2 text-xs leading-5 text-[#f0cfd1]">This number is an Earth geomagnetic index, not an astronaut radiation reading on the Moon. The LUNA-7 shelter incident is an imagined training scenario.</p>
               </div>}
               {stage===6&&<section className="space-y-3 rounded-2xl border border-[#9ac7e1]/30 bg-[#182d40] p-5">
