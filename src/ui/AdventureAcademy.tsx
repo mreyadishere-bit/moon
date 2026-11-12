@@ -77,6 +77,9 @@ export const AdventureAcademy:React.FC<Props>=({onClose,onDecision,onExplore})=>
     if(next===state)return;
     const newChoice=next.choices[next.choices.length-1];
     setLastConsequence(newChoice.consequence);
+    // Persist synchronously BEFORE the parent closes/unmounts this chapter;
+    // relying on a post-render effect loses progress when returning to the 3D world.
+    saveAdventure(next);
     setState(next);
     setObserved(false);setSignalSent(false);setSourceOpen(false);setShelterDemo(null);
     onDecision(stage,opt.id,next);
