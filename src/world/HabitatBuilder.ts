@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { TrainingWallExhibit } from './TrainingWallExhibit';
 import { LunarArtPass } from './LunarArtPass';
+import { LunarWonderArchitecture } from './LunarWonderArchitecture';
 import { soundFX } from '../audio/AudioManager';
 import { StationCrew } from '../characters/StationCrew';
 import { ChallengeId, MissionStateData } from '../game/MissionState';
@@ -114,6 +115,7 @@ export class HabitatBuilder {
     this.buildGreenhouseRoom();
     this.buildCozyVoxelDecorations();
     new LunarArtPass(scene);
+    new LunarWonderArchitecture(scene);
     this.buildDynamicFloorGuideTrail();
     this.buildObjectiveBeacon();
     this.buildAirborneDustMotes();
