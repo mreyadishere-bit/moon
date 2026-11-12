@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "capturedAtUTC": "2026-11-12",
+  "purpose": "Verified public NASA reference values for MOONSHIFT youth learning scenarios; NOT a full lunar habitat engineering model.",
+  "records": [
+    {
+      "id": "lunarGravityMs2",
+      "value": 1.62,
+      "units": "m/s²",
+      "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
+      "sourceLabel": "NASA Moon Fact Sheet",
+      "use": "free-fall learning simulation"
+    },
+    {
+      "id": "earthGravityMs2",
+      "value": 9.8,
+      "units": "m/s²",
+      "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
+      "sourceLabel": "NASA Moon Fact Sheet",
+      "use": "Earth comparison for free-fall learning"
+    },
+    {
+      "id": "earthMoonDistanceKm",
+      "value": 384400,
+      "units": "km",
+      "source": "https://science.nasa.gov/moon/facts/",
+      "sourceLabel": "NASA Moon Facts",
+      "use": "vacuum one-way radio signal delay"
+    },
+    {
+      "id": "solarIrradianceWm2",
+      "value": 1361,
+      "units": "W/m²",
+      "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
+      "sourceLabel": "NASA Moon Fact Sheet",
+      "use": "solar power demonstration with explicitly fictional panel geometry"
+    },
+    {
+      "id": "stormPeakKp",
+      "value": 9,
+      "units": "Earth Kp index",
+      "source": "https://ccmc.gsfc.nasa.gov/storms/may2024/",
+      "sourceLabel": "NASA CCMC — May 2024 Helio Storm",
+      "use": "historical solar-activity context for fictional shelter preparedness scenario",
+      "limitations": "Earth geomagnetic activity is not measured lunar radiation dose, radiation dose conversion prohibited."
+    }
+  ],
+  "teachingAssumptions": {
+    "panelAreaM2": 8,
+    "panelEfficiency": 0.2,
+    "illuminationWindowHours": 4,
+    "note": "Panel area, efficiency, 4-hour window, and colony resource scores are fictional, not NASA specifications."
+  },
+  "transformations": [
+    {
+      "id": "freeFall",
+      "formula": "distance_m = 0.5 * gravity_m_s2 * time_s ** 2",
+      "validity": "ideal free fall from rest in a vacuum"
+    },
+    {
+      "id": "solar",
+      "formula": "power_kW = irradiance_W_m2 * area_m2 * efficiency * (sunlight_pct/100) / 1000",
+      "validity": "simplified training panel, neglecting temperature, degradation and incidence geometry"
+    },
+    {
+      "id": "radio",
+      "formula": "one_way_s = mean_Earth_Moon_km / 299792.458 km/s",
+      "validity": "mean distance and ideal light-speed propagation; actual path and distance vary"
+    }
+  ]
+}
