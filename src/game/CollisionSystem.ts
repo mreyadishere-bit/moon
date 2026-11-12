@@ -119,6 +119,8 @@ export class CollisionSystem {
     { id: 'hub_desk_unit', minX: 3.2, maxX: 5.6, minZ: 4.8, maxZ: 6.5 },
     // Hub Panoramic Earth Lounge Bench (North-East Wall)
     { id: 'hub_lounge_bench', minX: 2.6, maxX: 5.4, minZ: -6.5, maxZ: -5.4 },
+    // Slim wall lockers: entirely beyond the western doorway's ±1.8m span.
+    { id: 'hub_crew_lockers', minX: -6.43, maxX: -5.80, minZ: 3.66, maxZ: 5.90 },
     // Power Core Main HVDC Console
     { id: 'power_console', minX: -0.9, maxX: 0.9, minZ: -22.4, maxZ: -20.6 },
     // Life Support ECLSS Console
