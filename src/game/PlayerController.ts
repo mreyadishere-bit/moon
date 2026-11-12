@@ -99,6 +99,11 @@ export class PlayerController {
         this.yaw = Math.PI;
         this.pitch = -0.05;
         break;
+      case 'planetarium':
+        this.position.set(17.5, this.EYE_HEIGHT, 13.9);
+        this.yaw = Math.PI;
+        this.pitch = -0.05;
+        break;
       case 'greenhouse':
         this.position.set(-15.5, this.EYE_HEIGHT, 0);
         this.yaw = Math.PI / 2;
