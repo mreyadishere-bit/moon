@@ -1307,6 +1307,35 @@ export class HabitatBuilder {
   /* CENTRAL MISSION HUB & 3D HOLOGRAPHIC COMMAND TABLE                         */
   /* -------------------------------------------------------------------------- */
 
+  private createTrainingMoonTexture(): THREE.CanvasTexture {
+    // Restrained, original illustration for the interactive hub globe.
+    // Explicitly NOT a mapped NASA LOLA geological dataset.
+    const c=document.createElement('canvas');c.width=512;c.height=256;
+    const g=c.getContext('2d')!;
+    g.fillStyle='#6d7a80';g.fillRect(0,0,512,256);
+    // Repeatable low-amplitude surface tonal variation.
+    for(let y=0;y<256;y+=4){
+      for(let x=0;x<512;x+=4){
+        const v=Math.sin(x*0.13+y*0.27)*0.5+Math.cos(x*.037-y*.11)*.5;
+        const light=Math.round(112+v*12);
+        g.fillStyle='rgb('+light+','+(light+7)+','+(light+10)+')';
+        g.fillRect(x,y,4,4);
+      }
+    }
+    let seed=41;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+    for(let i=0;i<140;i++){
+      const x=rand()*512,y=rand()*256,r=2+rand()*13;
+      g.beginPath();g.ellipse(x,y,r,r*(.45+rand()*.4),rand()*.5,0,Math.PI*2);
+      g.fillStyle='rgba(40,53,63,.14)';g.fill();
+      g.strokeStyle='rgba(223,226,219,.29)';g.lineWidth=1.5;g.stroke();
+    }
+    const tex=new THREE.CanvasTexture(c);
+    tex.colorSpace=THREE.SRGBColorSpace;
+    tex.wrapS=THREE.RepeatWrapping;
+    tex.anisotropy=4;
+    return tex;
+  }
+
   private buildCentralHub(): void {
     // 14x14m central command center
     this.buildRoomShell(0, 0, 14, 14, 4.4, {
@@ -1421,31 +1450,31 @@ export class HabitatBuilder {
     lens.position.y = 1.01;
     tableGroup.add(lens);
 
-    // Volumetric light cone projector beam
-    const coneGeo = new THREE.ConeGeometry(1.4, 1.8, 24, 1, true);
-    const coneMat = new THREE.MeshBasicMaterial({
-      color: 0x76aec9,
-      transparent: true,
-      opacity: 0.14,
-      side: THREE.DoubleSide,
-      blending: THREE.AdditiveBlending,
-    });
-    const projectorCone = new THREE.Mesh(coneGeo, coneMat);
-    projectorCone.position.y = 1.9;
-    tableGroup.add(projectorCone);
-
-    // Holographic core structure: Rotating Geodesic Moon + Concentric Coordinate Rings
-    this.holoCoreGroup.position.set(0, 1.75, 0);
-
-    const globeGeo = new THREE.IcosahedronGeometry(0.42, 2);
-    const globeMat = new THREE.MeshBasicMaterial({
-      color: 0x76aec9,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.75,
+    // Sculpted physical training globe, replacing the exposed triangle wireframe
+    // which looked like unfinished debug geometry in the player's camera.
+    this.holoCoreGroup.position.set(0, 1.69, 0);
+    const globeGeo = new THREE.SphereGeometry(0.43, 48, 32);
+    const globeMat = new THREE.MeshStandardMaterial({
+      map: this.createTrainingMoonTexture(),
+      color: 0xdbe1e4,
+      metalness: 0.09,
+      roughness: 0.88,
+      emissive: 0x1c3143,
+      emissiveIntensity: 0.17,
     });
     this.holoGlobe = new THREE.Mesh(globeGeo, globeMat);
     this.holoCoreGroup.add(this.holoGlobe);
+    const axis = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.014, 0.014, 1.06, 12),
+      this.matWarmAmber
+    );
+    axis.rotation.z = 0.18;
+    this.holoCoreGroup.add(axis);
+    // Scientific reference marker: geometry is decorative, not a NASA terrain model.
+    const globeStand = new THREE.Mesh(new THREE.TorusGeometry(0.51, 0.017, 10, 48),
+      new THREE.MeshStandardMaterial({ color: 0x89bac9, emissive: 0x164e69, emissiveIntensity: 0.3, roughness: .42 }));
+    globeStand.rotation.x = Math.PI/2;
+    this.holoCoreGroup.add(globeStand);
 
     // Concentric holographic rings
     [0.72, 1.05].forEach((rad, idx) => {
