@@ -150,7 +150,7 @@ export class HabitatBuilder {
     // Actual additional walkable wing, not a teleport-only or screenshot space.
     // Connect Life Support's south opening (z=6.5) to the new observatory (z=12.0).
     this.buildRoomShell(17.5, 9.5, 3.8, 6.0, 3.65, {north:true,south:true});
-    this.buildRoomShell(17.5, 17.5, 11, 11, 4.4, {north:true});
+    this.buildRoomShell(17.5, 17.5, 11, 11, 4.4, {north:true,windowSouth:true});
     this.planetariumWing = new PlanetariumWing(this.scene);
     this.interactives.push({
       id:'planetarium_console',title:'Solar System Explorer',
@@ -1008,7 +1008,7 @@ export class HabitatBuilder {
     width: number,
     depth: number,
     height: number,
-    openings: { north?: boolean; east?: boolean; south?: boolean; west?: boolean; windowNorthEast?: boolean }
+    openings: { north?: boolean; east?: boolean; south?: boolean; west?: boolean; windowNorthEast?: boolean; windowSouth?: boolean }
   ): THREE.Group {
     const group = new THREE.Group();
     group.position.set(centerX, 0, centerZ);
@@ -1068,6 +1068,58 @@ export class HabitatBuilder {
               : -width / 2;
 
       if (!hasDoor) {
+        // Wide, framed lunar landscape window, structurally inside the solid
+        // pressure wall. The collision barrier remains unchanged at z=23m.
+        // This is a true view into the existing Three.js lunar scene.
+        if (side === 'south' && openings.windowSouth) {
+          const viewWidth = Math.min(span - 2.0, 7.0);
+          const pierWidth = (span - viewWidth) / 2;
+          const sillY = 1.18;
+          const lintelY = 3.54;
+          const centerZ = posCoord;
+          const sashMat = new THREE.MeshStandardMaterial({
+            color: 0x435363, metalness: 0.73, roughness: 0.38
+          });
+          for (const dir of [-1,1]) {
+            const pier = new THREE.Mesh(
+              new THREE.BoxGeometry(pierWidth, height, wallThickness),
+              this.matCeramicWhite
+            );
+            pier.position.set(dir * (viewWidth / 2 + pierWidth / 2), height / 2, centerZ);
+            group.add(pier);
+          }
+          const sill = new THREE.Mesh(new THREE.BoxGeometry(viewWidth, sillY, wallThickness), this.matDeepGraphite);
+          sill.position.set(0, sillY / 2, centerZ);
+          group.add(sill);
+          const upper = new THREE.Mesh(new THREE.BoxGeometry(viewWidth, height-lintelY, wallThickness), this.matDeepGraphite);
+          upper.position.set(0, (height+lintelY)/2, centerZ);
+          group.add(upper);
+          const glass = new THREE.Mesh(
+            new THREE.PlaneGeometry(viewWidth - 0.28, lintelY - sillY - 0.20),
+            new THREE.MeshPhysicalMaterial({
+              color: 0x9bbdc9, transparent: true, opacity: 0.065,
+              roughness: 0.09, metalness: 0.0, depthWrite: false, side: THREE.DoubleSide
+            })
+          );
+          glass.position.set(0, (sillY + lintelY)/2, centerZ);
+          group.add(glass);
+          for (const y of [sillY, lintelY]) {
+            const frame = new THREE.Mesh(new THREE.BoxGeometry(viewWidth, 0.18, 0.30), sashMat);
+            frame.position.set(0,y,centerZ);
+            group.add(frame);
+          }
+          for (const x of [-viewWidth/2,0,viewWidth/2]) {
+            const mullion = new THREE.Mesh(new THREE.BoxGeometry(.13, lintelY-sillY, .26), sashMat);
+            mullion.position.set(x,(sillY+lintelY)/2,centerZ);
+            group.add(mullion);
+          }
+          const led = new THREE.Mesh(
+            new THREE.BoxGeometry(viewWidth-.55,.04,.11),this.matWarmAmber
+          );
+          led.position.set(0,sillY+.09,centerZ-.13);
+          group.add(led);
+          return;
+        }
         // Panoramic Observation Viewport on Hub North-East wall
         if (side === 'north' && openings.windowNorthEast) {
           const leftSeg = new THREE.Mesh(
