@@ -706,6 +706,20 @@ export default function App() {
               if(stage===5 && choice==='shelter') d.power.radiationAllocationKw=2;
               if(stage===6 && choice==='ask') d.telemetry.batteryKwh=Math.max(0,d.telemetry.batteryKwh-1);
             },{system:'Science Academy',action:key + ':' + choice,impact:'Training decision changed the 3D habitat allocation. Educational model result: battery '+training.batteryKwh.toFixed(1)+' kWh, air '+training.air+', shelter '+training.safety+'.'});
+            // Chapters are adventures, not seven slides in a row. Return to the
+            // explorable habitat for the next discovery, while keeping Academy accessible.
+            if (stage < 6) {
+              setShowAcademy(false);
+              const prompts=[
+                'Mission chosen! Look around the hub. PIX can guide you to the next science discovery.',
+                'Amazing! Gravity works differently on the Moon. Next, find Leo near the Power Core and learn about solar panels.',
+                'Your energy decision changed the habitat. See which machines grew brighter — then investigate our air system!',
+                'You repaired the air strategy! SPROUT is waiting in the Greenhouse. Let’s find out what plants need.',
+                'Our garden has a plan. Follow the trail to the Radiation Shelter and prepare for the next event.',
+                'Shelter plan noted. Return to the hub and learn how radio signals travel through space.'
+              ];
+              setNovaMessage({id:'lesson-world-'+stage,speaker:'NOVA',text:prompts[stage],priority:'normal'});
+            }
           }}
         />
       )}
