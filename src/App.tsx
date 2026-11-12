@@ -32,6 +32,7 @@ import { CrewId } from './ai/crewKnowledge';
 import { CrewConversation } from './ui/CrewConversation';
 import { PixCompanion } from './characters/PixCompanion';
 import { ObservationModal } from './ui/ObservationModal';
+import { PlanetariumModal } from './ui/PlanetariumModal';
 import { Canvas2DRenderer } from './world/Canvas2DRenderer';
 import { HabitatBuilder, InteractiveTarget } from './world/HabitatBuilder';
 
@@ -57,6 +58,7 @@ export default function App() {
   const introRef = useRef({active:false,elapsed:0});
   const [showScienceModal, setShowScienceModal] = useState<boolean>(false);
   const [showObservationModal, setShowObservationModal] = useState<boolean>(false);
+  const [showPlanetarium, setShowPlanetarium] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [showGuidebookModal, setShowGuidebookModal] = useState<boolean>(false);
   const [guidebookTab, setGuidebookTab] = useState<'mission' | 'map' | 'controls' | 'discoveries' | 'science'>('mission');
@@ -90,6 +92,7 @@ export default function App() {
     introCinematic ||
     Boolean(activeCrew) ||
     showObservationModal ||
+    showPlanetarium ||
     showScienceModal ||
     showSettingsModal ||
     showGuidebookModal ||
@@ -124,7 +127,7 @@ export default function App() {
     if (playerRef.current) {
       playerRef.current.setEnabled(!activeModalRef.current);
     }
-  }, [inMenu, activeChallenge, activeRepair, showAcademy, introCinematic, activeCrew, showObservationModal, showScienceModal, showSettingsModal, showGuidebookModal, missionState.stormEvaluated]);
+  }, [inMenu, activeChallenge, activeRepair, showAcademy, introCinematic, activeCrew, showObservationModal, showPlanetarium, showScienceModal, showSettingsModal, showGuidebookModal, missionState.stormEvaluated]);
 
   const updateMissionState = useCallback(
     (
@@ -185,6 +188,12 @@ export default function App() {
         soundFX.playClick(660);
         setShowAcademy(true);
         pixRef.current?.say('Come on! Let’s run a science experiment!', 3);
+        return;
+      }
+
+      if (t.actionType === 'planetarium') {
+        soundFX.playClick(670);
+        setShowPlanetarium(true);
         return;
       }
 
@@ -326,6 +335,8 @@ export default function App() {
           setShowAcademy(false);
         } else if (activeRepair) {
           setActiveRepair(null);
+        } else if (showPlanetarium) {
+          setShowPlanetarium(false);
         } else if (showObservationModal) {
           setShowObservationModal(false);
         } else if (activeCrew) {
@@ -369,6 +380,7 @@ export default function App() {
     introCinematic,
     activeCrew,
     showObservationModal,
+    showPlanetarium,
     showScienceModal,
     showSettingsModal,
     showGuidebookModal,
@@ -619,6 +631,7 @@ export default function App() {
     setCinematicElapsed(0);
     setIntroCinematic(true);
     setShowObservationModal(false);
+    setShowPlanetarium(false);
     setNovaMessage(StoryDirector.getOpeningSequence()[0]);
     playerRef.current?.teleportToRoom('hub');
     setInMenu(false);
@@ -687,7 +700,8 @@ export default function App() {
         </div>
       )}
 
-      {showObservationModal && <ObservationModal onClose={() => setShowObservationModal(false)} />}
+      {showObservationModal && <ObservationModal onClose={() => setShowObservationModal(false)} onOpenPlanetarium={() => {setShowObservationModal(false);setShowPlanetarium(true);}} />}
+      {showPlanetarium && <PlanetariumModal onClose={() => setShowPlanetarium(false)} onAskScientist={() => {setShowPlanetarium(false);setCrewGreeting('');setActiveCrew('maya');}} />}
 
       {/* Main Menu Overlay */}
       {inMenu && (
@@ -794,7 +808,7 @@ export default function App() {
       )}
 
       {/* In-world character conversations dock to the edge, never covering the scene's center. */}
-      {!inMenu && !introCinematic && !missionState.stormEvaluated && !activeCrew && !showAcademy && (
+      {!inMenu && !introCinematic && !missionState.stormEvaluated && !activeCrew && !showAcademy && !showPlanetarium && (
         <button type="button" onClick={() => {setActiveCrew('pix');setCrewGreeting('');}}
           aria-label="Talk to PIX the companion"
           className="fixed bottom-5 right-5 z-40 flex min-h-11 items-center gap-2 rounded-full border border-[#8cb9c7]/50 bg-[#143043]/95 px-4 py-3 text-sm font-semibold text-[#e6f3f6] shadow-2xl transition hover:bg-[#295066]">
