@@ -118,12 +118,12 @@ export const ObservationModal: React.FC<{ onClose: () => void; onOpenPlanetarium
   return (
     <div className="fixed inset-0 z-[65] flex items-center justify-center bg-[#03070c]/95 p-3 sm:p-8 backdrop-blur-xl" role="dialog" aria-modal="true" aria-label="Earth observation telescope">
       <div className="moon-observation relative flex w-full max-w-6xl h-[min(92vh,820px)] min-h-0 flex-col overflow-hidden rounded-3xl border border-white/15 bg-[#111b27] shadow-[0_45px_130px_rgba(0,0,0,.85)] lg:flex-row">
-        <div className="relative min-h-[240px] flex-[1_1_48%] overflow-hidden bg-[radial-gradient(circle_at_50%_50%,#142c45_0%,#09111f_45%,#05080f_78%)] lg:h-auto">
+        <div className="relative h-[37vh] min-h-[230px] shrink-0 overflow-hidden lg:h-full lg:min-h-0 lg:flex-1 bg-[radial-gradient(circle_at_50%_50%,#142c45_0%,#09111f_45%,#05080f_78%)] ">
           <div className="pointer-events-none absolute left-5 top-5 z-10 rounded-full border border-white/20 bg-black/30 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#bfd9e9]">LUNA-7 · Observation telescope</div>
           <div ref={mount} className="h-full w-full cursor-grab active:cursor-grabbing" aria-label="Drag to rotate the Earth" />
           <div className="pointer-events-none absolute bottom-5 left-5 right-5 z-10 flex justify-between text-[11px] text-white/55"><span>NASA BLUE MARBLE · EARTH</span><span>OPTICAL MAGNIFICATION</span></div>
         </div>
-        <aside className="min-h-0 flex w-full shrink-0 flex-col gap-5 overflow-y-auto overscroll-contain p-5 sm:p-7 lg:w-[360px] lg:p-8">
+        <aside className="flex min-h-0 w-full flex-1 flex-col gap-4 overflow-y-auto overscroll-contain p-5 sm:p-6 lg:h-full lg:w-[360px] lg:flex-none lg:p-7">
           <div>
             <div className="flex items-start justify-between gap-4">
               <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#79b6d2]">PIX'S FIELD NOTES</span>
