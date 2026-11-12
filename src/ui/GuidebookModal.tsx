@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { soundFX } from '../audio/AudioManager';
 import { MissionStateData, RoomId } from '../game/MissionState';
 import { StoryDirector } from '../narrative/StoryDirector';
+import { NASA_OBSERVATIONS, readAdventure } from '../game/ScienceAdventure';
 
 interface GuidebookModalProps {
   state: MissionStateData;
   playerPos: { x: number; z: number };
   initialTab?: 'mission' | 'map' | 'controls' | 'discoveries' | 'science';
   onClose: () => void;
+  onOpenAcademy?: () => void;
   onTeleportToRoom?: (room: RoomId) => void;
 }
 
@@ -16,11 +18,13 @@ export const GuidebookModal: React.FC<GuidebookModalProps> = ({
   playerPos,
   initialTab = 'mission',
   onClose,
+  onOpenAcademy,
   onTeleportToRoom,
 }) => {
   const [activeTab, setActiveTab] = useState<'mission' | 'map' | 'controls' | 'discoveries' | 'science'>(initialTab);
 
   const objective = StoryDirector.getCurrentObjective(state);
+  const training = readAdventure();
 
   const chapters = [
     {
@@ -139,6 +143,13 @@ export const GuidebookModal: React.FC<GuidebookModalProps> = ({
           {/* TAB 1: MY MISSION */}
           {activeTab === 'mission' && (
             <div className="space-y-6">
+              <div className="rounded-2xl border border-[#80c8dc]/35 bg-gradient-to-r from-[#1e3b4e] to-[#192e3f] p-5">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-[#9ed8ea]">✦ Story & Science Academy</p>
+                <h3 className="mt-2 text-lg font-semibold text-white">Your lunar learning journey</h3>
+                <p className="mt-2 text-sm leading-6 text-[#cbdce7]">{training.choices.length} of 7 lessons explored. Experiment with real NASA reference values, make choices, then see how your decisions change our Moon base.</p>
+                {training.choices.length>0&&<p className="mt-2 text-xs text-[#a5ced7]">Last decision: {training.choices[training.choices.length-1].label}</p>}
+                {onOpenAcademy&&<button type="button" onClick={onOpenAcademy} className="mt-4 rounded-xl bg-[#a3d9de] px-5 py-3 text-sm font-bold text-[#112b36] hover:bg-[#c6edf2]">{training.stage===7?'Review your story':'Continue your story & experiments'} →</button>}
+              </div>
               {/* Active Current Objective Hero Card */}
               <div className="border border-[#E8AD66] bg-[#16212D]/80 p-5 rounded-sm shadow-md">
                 <div className="flex items-center justify-between gap-4">
@@ -389,6 +400,12 @@ export const GuidebookModal: React.FC<GuidebookModalProps> = ({
           {/* TAB 5: NASA SCIENCE */}
           {activeTab === 'science' && (
             <div className="space-y-4 max-w-2xl mx-auto text-xs text-[#ccd3d8]">
+              <div className="rounded-2xl border border-[#a0cce1]/30 bg-[#182d40] p-5">
+                <h4 className="text-base font-bold text-[#bce1f2]">NASA values used in our experiments</h4>
+                <p className="mt-2 text-sm leading-6">These measurements drive the gravity demonstration, example solar energy calculation, Moon communication delay and historical space-weather training alert.</p>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">{Object.entries(NASA_OBSERVATIONS).map(([id,source])=><a key={id} href={source.url} target="_blank" rel="noopener noreferrer" className="rounded-xl border border-white/10 bg-[#122436] p-3 hover:border-[#8acbdd]"><strong className="block text-sm text-white">{source.label}</strong><span className="mt-1 block text-xs text-[#9dd2e8]">{source.value.toLocaleString()} {source.unit} · NASA ↗</span></a>)}</div>
+                <p className="mt-3 text-xs leading-5 text-[#a6becd]">Our colony equipment sizes, energy allocations, radiation readiness scores and event sequence are fictional teaching assumptions. May 2024 Kp 9 describes Earth’s geomagnetic conditions, not a measured lunar astronaut dose.</p>
+              </div>
               <div className="p-4 bg-[#141C25] border border-[#76AEC9]/30 rounded-sm">
                 <h4 className="font-bold text-sm text-[#76AEC9] font-display">
                   1. Artemis & Lunar South Pole Sunlight
