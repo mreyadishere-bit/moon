@@ -10,6 +10,7 @@ interface GuidebookModalProps {
   initialTab?: 'mission' | 'map' | 'controls' | 'discoveries' | 'science';
   onClose: () => void;
   onOpenAcademy?: () => void;
+  onOpenPlanetarium?: () => void;
   onTeleportToRoom?: (room: RoomId) => void;
 }
 
@@ -19,6 +20,7 @@ export const GuidebookModal: React.FC<GuidebookModalProps> = ({
   initialTab = 'mission',
   onClose,
   onOpenAcademy,
+  onOpenPlanetarium,
   onTeleportToRoom,
 }) => {
   const [activeTab, setActiveTab] = useState<'mission' | 'map' | 'controls' | 'discoveries' | 'science'>(initialTab);
@@ -310,6 +312,9 @@ export const GuidebookModal: React.FC<GuidebookModalProps> = ({
                 </div>
               </div>
 
+              {onOpenPlanetarium&&<button type="button" onClick={onOpenPlanetarium} className="mt-4 rounded-xl border border-[#89b4d1]/50 bg-[#20384d] px-5 py-3 text-sm font-semibold text-[#ddf0f6] hover:bg-[#305672]">
+                ✦ Explore the new Solar System Observatory ↗
+              </button>}
               <div className="mt-4 flex flex-wrap items-center justify-center gap-6 text-xs text-[#8E999E]">
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-[#38BDF8] inline-block" />
