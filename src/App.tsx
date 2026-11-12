@@ -701,6 +701,7 @@ export default function App() {
           playerPos={playerPosState}
           initialTab={guidebookTab}
           onClose={() => setShowGuidebookModal(false)}
+          onOpenAcademy={() => { setShowGuidebookModal(false); setShowAcademy(true); }}
           onTeleportToRoom={handleTeleportToRoom}
         />
       )}
