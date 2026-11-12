@@ -2924,8 +2924,9 @@ export class HabitatBuilder {
     this.radiationBeaconLight.color.setHex(
       state.radiation.completed ? 0x77b89a : 0xde6f60
     );
+    const shelterDrillActive=state.currentChapter>=5 && !state.radiation.completed;
     this.hubStatusLight.color.setHex(
-      state.telemetry.habitatConditionPct >= 80 ? 0x77b89a : 0x76aec9
+      shelterDrillActive ? 0xda7468 : state.telemetry.habitatConditionPct >= 80 ? 0x77b89a : 0x76aec9
     );
 
     // 10. Drift airborne dust particles
@@ -2949,7 +2950,8 @@ export class HabitatBuilder {
     this.powerCoreLight.intensity = THREE.MathUtils.damp(this.powerCoreLight.intensity, 3.2 * lightMultiplier, 4, dt);
     this.lifeSupportLight.intensity = THREE.MathUtils.damp(this.lifeSupportLight.intensity, 3.2 * lightMultiplier, 4, dt);
     this.greenhouseLight.intensity = THREE.MathUtils.damp(this.greenhouseLight.intensity, 3.2 * lightMultiplier, 4, dt);
-    this.radiationBeaconLight.intensity = THREE.MathUtils.damp(this.radiationBeaconLight.intensity, 3.4 * lightMultiplier, 4, dt);
+    const gentleAlertPulse=shelterDrillActive ? 2.65+0.6*(0.5+Math.sin(performance.now()*0.002)*0.5) : 3.4;
+    this.radiationBeaconLight.intensity = THREE.MathUtils.damp(this.radiationBeaconLight.intensity, gentleAlertPulse * lightMultiplier, 4, dt);
     this.hubStatusLight.intensity = THREE.MathUtils.damp(this.hubStatusLight.intensity, state.stationLightsOn ? 3.2 : 1.4, 4, dt);
 
     // 13. Update Station Crew Characters
