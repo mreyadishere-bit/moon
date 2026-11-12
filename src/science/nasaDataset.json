@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "capturedAtUTC": "2026-11-12",
   "purpose": "Verified public NASA reference values for MOONSHIFT youth learning scenarios; NOT a full lunar habitat engineering model.",
   "records": [
@@ -67,5 +67,18 @@
       "formula": "one_way_s = mean_Earth_Moon_km / 299792.458 km/s",
       "validity": "mean distance and ideal light-speed propagation; actual path and distance vary"
     }
-  ]
+  ],
+  "historicalEvent": {
+    "id": "20240511-AL-003",
+    "recordType": "NASA DONKI space-weather notification",
+    "issuedAtUTC": "2024-05-11T00:39:58Z",
+    "observedIntervalUTC": {
+      "start": "2024-05-10T21:00:00Z",
+      "end": "2024-05-11T00:00:00Z"
+    },
+    "observedEarthKp": 9,
+    "source": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/Alert/30708/1",
+    "description": "Research notification that Earth's Kp index reached 9 during an extreme geomagnetic storm.",
+    "limitations": "Kp is Earth's geomagnetic index, not lunar proton flux nor absorbed crew radiation dose. This event inspires a separate fictional preparedness drill."
+  }
 }
