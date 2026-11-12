@@ -3,6 +3,7 @@ import { TrainingWallExhibit } from './TrainingWallExhibit';
 import { LunarArtPass } from './LunarArtPass';
 import { LunarWonderArchitecture } from './LunarWonderArchitecture';
 import { PremiumBulkheads } from './PremiumBulkheads';
+import { HubDressing } from './HubDressing';
 import { soundFX } from '../audio/AudioManager';
 import { StationCrew } from '../characters/StationCrew';
 import { ChallengeId, MissionStateData } from '../game/MissionState';
@@ -114,8 +115,18 @@ export class HabitatBuilder {
     this.buildLifeSupportRoom();
     this.buildRadiationRoom();
     this.buildGreenhouseRoom();
+    // Deliberately replace oversized cabinets/voxel furniture which crossed
+    // the greenhouse approach. Keep all crew interaction targets intact.
+    const dressing = new HubDressing(scene);
+    this.interactives.push({
+      id: 'observation_telescope',
+      title: 'Earth Observation Telescope',
+      subtitle: 'Explore Earth from the Moon [E]',
+      actionType: 'observation',
+      position: dressing.telescopePosition,
+      mesh: dressing.telescope,
+    });
     if (!this.isSoftwareGl) {
-      this.buildCozyVoxelDecorations();
       new LunarArtPass(scene);
       new LunarWonderArchitecture(scene);
       new PremiumBulkheads(scene);
