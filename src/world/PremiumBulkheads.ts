@@ -30,22 +30,23 @@ export class PremiumBulkheads {
     scene.add(this.root);
   }
   private archShape(outerWidth:number,height:number,insideWidth:number,insideHeight:number){
-    // beveled outer jamb cut corners; generous rectilinear inner clearance.
+    // Open-bottom U-shaped bezel; NOT a polygon with a hole touching its
+    // boundary (which would generate degenerate triangles and block doors).
     const s=new THREE.Shape();
-    const x=outerWidth/2,y0=.03,y1=height;
-    const chamfer=.42;
-    s.moveTo(-x+chamfer,y0);s.lineTo(x-chamfer,y0);
-    s.lineTo(x,y0+chamfer);s.lineTo(x,y1-chamfer);
-    s.lineTo(x-chamfer,y1);s.lineTo(-x+chamfer,y1);
-    s.lineTo(-x,y1-chamfer);s.lineTo(-x,y0+chamfer);
+    const x=outerWidth/2, inner=insideWidth/2, chamfer=.42, y0=.06;
+    s.moveTo(-x,y0);
+    s.lineTo(-x,height-chamfer);
+    s.lineTo(-x+chamfer,height);
+    s.lineTo(x-chamfer,height);
+    s.lineTo(x,height-chamfer);
+    s.lineTo(x,y0);
+    s.lineTo(inner,y0);
+    s.lineTo(inner,insideHeight-.20);
+    s.lineTo(inner-.20,insideHeight);
+    s.lineTo(-inner+.20,insideHeight);
+    s.lineTo(-inner,insideHeight-.20);
+    s.lineTo(-inner,y0);
     s.closePath();
-    const hole=new THREE.Path();
-    const inner=insideWidth/2,base=-.3,top=insideHeight;
-    // Intentionally no bottom sill, so player passes unobstructed.
-    hole.moveTo(-inner,base);hole.lineTo(-inner,top-.20);
-    hole.lineTo(-inner+.20,top);hole.lineTo(inner-.20,top);
-    hole.lineTo(inner,top-.20);hole.lineTo(inner,base);hole.closePath();
-    s.holes.push(hole);
     return s;
   }
   private shapeMesh(width:number,h:number,innerWidth:number,innerH:number,thick:number,mat:THREE.Material){
