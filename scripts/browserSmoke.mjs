@@ -22,7 +22,12 @@ page.setDefaultTimeout(12000);
 const outDir='browser-test-artifacts';
 fs.mkdirSync(outDir,{recursive:true});
 const record=async(label)=>{
-  await page.screenshot({path:`${outDir}/${label}.png`,fullPage:false});
+  try {
+    await page.screenshot({path:`${outDir}/${label}.png`,fullPage:false,timeout:3500,animations:'disabled'});
+    console.log('BROWSER_SCREENSHOT',label);
+  } catch (error) {
+    console.warn('OPTIONAL_SCREENSHOT_SKIPPED',label,error instanceof Error?error.message.split('\n')[0]:String(error));
+  }
   console.log('BROWSER_CHECK',label,'url',page.url());
 };
 const academy=async()=>page.getByRole('button',{name:/Story & Science Academy/i}).click();
@@ -41,6 +46,7 @@ try{
   assert.ok(await page.locator('canvas').count()>0,'Real game rendering canvas should exist');
   const glWarning=await page.getByText("Full 3D graphics couldn't start").count();
   console.log('BROWSER_WEBGL_CONTEXT',glWarning?'Software fallback in CI':'No graphics fallback warning');
+  if(glWarning)await page.getByRole('button',{name:/Continue in basic mode/i}).click();
   await academy();
   await page.getByText('A home on the Moon',{exact:true}).waitFor();
   await pick('The Energy Crisis');
