@@ -96,6 +96,17 @@ export default function App() {
   const playerRef = useRef<PlayerController | null>(null);
   const focusedTargetRef = useRef<InteractiveTarget | null>(null);
   const pixRef = useRef<PixCompanion | null>(null);
+  const previousChapterRef = useRef(1);
+
+  // The first solar-alert chapter shift creates an actual in-game emergency beat.
+  useEffect(() => {
+    const chapter=missionState.currentChapter;
+    if (!inMenu && chapter>=5 && previousChapterRef.current<5 && !missionState.radiation.completed) {
+      soundFX.playAlertChime();
+      setNovaMessage({id:'solar-alert-scene',speaker:'NOVA',text:'Training alert: space weather is changing. Find the protective shelter and prepare the crew. You have time to think — this is a learning simulation.',priority:'warning'});
+    }
+    previousChapterRef.current=chapter;
+  },[missionState.currentChapter,missionState.radiation.completed,inMenu]);
 
   // Apply settings to audio and player controller
   useEffect(() => {
