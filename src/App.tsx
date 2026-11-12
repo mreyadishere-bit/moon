@@ -161,6 +161,13 @@ export default function App() {
         return;
       }
 
+      if (t.actionType === 'academy') {
+        soundFX.playClick(660);
+        setShowAcademy(true);
+        pixRef.current?.say('Come on! Let’s run a science experiment!', 3);
+        return;
+      }
+
       if (t.actionType === 'observation') {
         soundFX.playClick(670);
         setShowObservationModal(true);
