@@ -11,9 +11,9 @@ const _euler = new THREE.Euler(0, 0, 0, 'YXZ');
 
 export class PlayerController {
   public camera: THREE.PerspectiveCamera;
-  public position = new THREE.Vector3(0, 1.7, 3.8);
+  public position = new THREE.Vector3(-3.0, 1.7, 5.2);
   public velocity = new THREE.Vector3();
-  public yaw = 0; // Radians (0 = looking North along -Z)
+  public yaw = -0.42; // Framed view toward the mission sculpture and laboratory entrances
   public pitch = -0.05; // Radians
   public isGrounded = true;
   public isPointerLocked = false;
@@ -80,8 +80,8 @@ export class PlayerController {
   public teleportToRoom(room: RoomId): void {
     switch (room) {
       case 'hub':
-        this.position.set(0, this.EYE_HEIGHT, 3.6);
-        this.yaw = 0;
+        this.position.set(-3.0, this.EYE_HEIGHT, 5.2);
+        this.yaw = -0.42;
         this.pitch = -0.06;
         break;
       case 'power':
