@@ -11,7 +11,9 @@
     "lint": "tsc --noEmit",
     "test:science": "tsx --test tests/scienceAdventure.test.ts",
     "audit:nasa": "node scripts/verifyNASA.mjs",
-    "audit:nasa:online": "node scripts/verifyNASA.mjs --online"
+    "audit:nasa:online": "node scripts/verifyNASA.mjs --online",
+    "test:gameplay": "tsx --test tests/gameplay.test.ts",
+    "test": "tsx --test tests/scienceAdventure.test.ts tests/gameplay.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
