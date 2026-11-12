@@ -63,7 +63,7 @@ export const HUD: React.FC<HUDProps> = ({
         {/* Top Header Bar: Clean 3-Zone Layout */}
         <div className="flex items-start justify-between gap-4">
           {/* Top-Left: Sleek Active Objective Card */}
-          <div className="pointer-events-auto bg-[#101820]/90 backdrop-blur-md border border-[#8E999E]/30 p-3.5 rounded-sm shadow-xl max-w-sm">
+          <div className="pointer-events-auto bg-[#132637]/90 backdrop-blur-md border border-[#8E999E]/30 p-3.5 rounded-2xl shadow-xl max-w-sm">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#E8AD66] animate-pulse" />
               <span className="text-[11px] font-mono-tabular uppercase tracking-wider text-[#E8AD66] font-bold">
@@ -119,8 +119,8 @@ export const HUD: React.FC<HUDProps> = ({
                 soundFX.playClick(600);
                 onToggleGuideTrail();
               }}
-              title="Toggle Glowing Floor Path [H]"
-              className={`px-3 py-1.5 text-xs font-semibold rounded-sm border transition-colors ${
+              title="Toggle Glowing Floor Guide [H]"
+              className={`px-3 py-1.5 text-xs font-semibold rounded-xl border transition-colors ${
                 state.guideTrailActive
                   ? 'border-[#76AEC9] bg-[#76AEC9]/20 text-[#76AEC9]'
                   : 'border-[#8E999E]/30 bg-[#101820]/90 text-[#8E999E] hover:text-[#E7E9E6]'
@@ -136,7 +136,7 @@ export const HUD: React.FC<HUDProps> = ({
                 onOpenGuidebook('map');
               }}
               title="Station Map [M]"
-              className="px-3 py-1.5 text-xs font-semibold rounded-sm border border-[#8E999E]/30 bg-[#101820]/90 text-[#E7E9E6] hover:border-[#76AEC9] transition-colors"
+              className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-[#8E999E]/30 bg-[#101820]/90 text-[#E7E9E6] hover:border-[#76AEC9] transition-colors"
             >
               Map [M]
             </button>
@@ -147,8 +147,8 @@ export const HUD: React.FC<HUDProps> = ({
                 soundFX.playClick(620);
                 onOpenGuidebook('mission');
               }}
-              title="Astronaut Journal & Guidebook [J]"
-              className="px-3.5 py-1.5 text-xs font-semibold rounded-sm bg-[#76AEC9] text-[#101820] hover:bg-[#8cc3dc] transition-colors shadow-md flex items-center gap-1.5"
+              title="Astronaut Journal & Journal [J]"
+              className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-[#76AEC9] text-[#101820] hover:bg-[#8cc3dc] transition-colors shadow-md flex items-center gap-1.5"
             >
               <span>📖</span>
               <span>Guidebook [J]</span>
@@ -161,7 +161,7 @@ export const HUD: React.FC<HUDProps> = ({
                 onOpenSettings();
               }}
               title="Settings & Controls [Esc]"
-              className="p-1.5 text-xs font-semibold rounded-sm border border-[#8E999E]/30 bg-[#101820]/90 text-[#8E999E] hover:text-[#E7E9E6] transition-colors"
+              className="p-1.5 text-xs font-semibold rounded-xl border border-[#8E999E]/30 bg-[#101820]/90 text-[#8E999E] hover:text-[#E7E9E6] transition-colors"
             >
               ⚙️
             </button>
@@ -185,7 +185,7 @@ export const HUD: React.FC<HUDProps> = ({
 
           {/* Contextual Interaction Card (only visible when aiming at an interactable within reach) */}
           {focusedTarget && (
-            <div className="mt-5 pointer-events-auto border border-[#E8AD66] bg-[#101820]/95 backdrop-blur-md px-5 py-3 text-center shadow-2xl max-w-sm rounded-sm">
+            <div className="mt-5 pointer-events-auto border border-[#E8AD66] bg-[#101820]/95 backdrop-blur-md px-5 py-3 text-center shadow-2xl max-w-sm rounded-xl">
               <div className="flex items-center justify-center gap-2 text-[11px] font-mono-tabular uppercase tracking-wider text-[#E8AD66] font-bold">
                 <span className="w-2 h-2 bg-[#E8AD66] rounded-full animate-ping" />
                 <span>
@@ -206,7 +206,7 @@ export const HUD: React.FC<HUDProps> = ({
                 }}
                 className="mt-2.5 w-full bg-[#E8AD66] px-4 py-1.5 text-xs font-bold text-[#101820] hover:bg-[#f3be7c] transition-colors shadow-md uppercase tracking-wider"
               >
-                INTERACT NOW [E]
+                Press E to interact
               </button>
             </div>
           )}
@@ -215,7 +215,7 @@ export const HUD: React.FC<HUDProps> = ({
         {/* Bottom Banner: Dialogue & Story Notifications */}
         <div className="flex flex-col items-center pointer-events-none pb-2">
           {novaMessage && (
-            <div className="pointer-events-auto max-w-xl w-full border border-[#76AEC9]/50 bg-[#0E1620]/95 backdrop-blur-md p-4 rounded-sm shadow-2xl animate-fade-in flex items-start gap-3.5">
+            <div className="pointer-events-auto max-w-xl w-full border border-[#76AEC9]/50 bg-[#0E1620]/95 backdrop-blur-md p-4 rounded-xl shadow-2xl animate-fade-in flex items-start gap-3.5">
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
                   novaMessage.speaker === 'DR. MAYA CHEN'
@@ -232,7 +232,7 @@ export const HUD: React.FC<HUDProps> = ({
                       novaMessage.speaker === 'DR. MAYA CHEN' ? 'text-[#E8AD66]' : 'text-[#76AEC9]'
                     }`}
                   >
-                    {novaMessage.speaker} · INCOMING TRANSMISSION
+                    {novaMessage.speaker} · FIELD RADIO
                   </span>
                   {onDismissNovaMessage && (
                     <button
