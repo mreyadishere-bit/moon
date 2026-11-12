@@ -22,6 +22,8 @@ export const insidePressurizedHabitat=(x:number,z:number):boolean => (
   (Math.abs(z)<=6.22 && x>=11.9 && x<=22.72) ||
   (Math.abs(x)<=1.83 && z>=6.7 && z<=12.1) ||
   (Math.abs(x)<=6.22 && z>=11.9 && z<=22.72) ||
+  (Math.abs(x-17.5)<=1.74 && z>=6.25 && z<=12.3) ||
+  (Math.abs(x-17.5)<=5.22 && Math.abs(z-17.5)<=5.22) ||
   (Math.abs(z)<=1.83 && x>=-12.1 && x<=-6.7) ||
   (Math.abs(z)<=6.22 && x>=-22.72 && x<=-11.9)
 );
