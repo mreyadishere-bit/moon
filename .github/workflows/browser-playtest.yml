@@ -4,6 +4,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: moonshift-browser-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   playable-journey:
     runs-on: ubuntu-24.04
