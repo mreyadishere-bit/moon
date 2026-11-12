@@ -54,7 +54,7 @@ export class LunarWonderArchitecture {
     // Deep structural wall articulation. Walls retain large, readable voids at entrances.
     const onEastWest=(side:number)=>{
       const wx=x+side*ox;
-      this.part(wx,1.55,z,0.14,2.5,0.15,this.graphiteDark);
+      // Keep the center doorway unobstructed: structural details flank it, never bisect it.
       for(let k=-1;k<=1;k++){
         if(k===0)continue; // no beam covering the approach to any door.
         const wz=z+k*(d*.315);
