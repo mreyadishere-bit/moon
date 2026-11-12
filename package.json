@@ -13,7 +13,8 @@
     "audit:nasa": "node scripts/verifyNASA.mjs",
     "audit:nasa:online": "node scripts/verifyNASA.mjs --online",
     "test:gameplay": "tsx --test tests/gameplay.test.ts",
-    "test": "tsx --test tests/scienceAdventure.test.ts tests/gameplay.test.ts"
+    "test": "tsx --test tests/scienceAdventure.test.ts tests/gameplay.test.ts",
+    "test:navigation": "tsx --test tests/guidePath.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
