@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ChallengeId } from '../game/MissionState';
+import { NASA_SCIENTIFIC_SOURCES } from '../science/sources';
 
 type Direction = 0 | 1 | 2 | 3;
 type Cell = { ports: [Direction, Direction]; rotation: number; label: string; path: boolean };
@@ -40,6 +41,7 @@ const connected = (cells:Cell[]) => {
 };
 export const EmergencyRepair:React.FC<{challengeId:ChallengeId;onComplete:()=>void;onClose:()=>void}> = ({challengeId,onComplete,onClose})=>{
   const config=scenarios[challengeId];
+  const scienceSource = NASA_SCIENTIFIC_SOURCES.find(s => s.id === ({power:'lunar-solar-power',lifesupport:'eclss-air-water',greenhouse:'space-agriculture',radiation:'lunar-radiation',master_console:'lunar-solar-power'} as Record<ChallengeId,string>)[challengeId]);
   const [cells,setCells]=useState<Cell[]>(initial);
   const [hint,setHint]=useState(false);
   const [showScience,setShowScience]=useState(false);
@@ -93,7 +95,7 @@ export const EmergencyRepair:React.FC<{challengeId:ChallengeId;onComplete:()=>vo
             <div className="mt-3 text-xs text-[#a3b8c8]">Turns: {turns} · No time limit</div>
           </div>
           <button type="button" onClick={()=>setShowScience(v=>!v)} className="rounded-xl border border-white/20 bg-[#1b303d] px-4 py-3 text-left text-sm font-semibold hover:bg-[#284152]">📖 {showScience?'Hide':'Learn'} the science</button>
-          {showScience&&<p className="rounded-xl bg-[#1c3041] p-3 text-sm leading-6 text-[#daebf2]">{config.note}<br/><span className="text-xs text-[#89aec8]">Educational model — not a real wiring diagram.</span></p>}
+          {showScience&&<div className="rounded-xl bg-[#1c3041] p-3 text-sm leading-6 text-[#daebf2]"><p>{config.note}</p><p className="mt-2 text-xs text-[#89aec8]">Educational model — not a real wiring diagram or a live NASA measurement.</p>{scienceSource&&<a href={scienceSource.citationUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm font-semibold text-[#a5dbff] underline underline-offset-4">Explore the NASA science source ↗</a>}</div>}
           <button type="button" onClick={()=>setHint(v=>!v)} className="rounded-xl border border-white/20 px-4 py-3 text-left text-sm font-semibold hover:bg-white/10">{hint?'Hide help':'💡 Need a hint?'}</button>
           {hint&&!status.won&&<p className="text-xs leading-5 text-[#c7d7e3]">Follow the route: left-middle → top-left → top-middle → center → bottom-middle → bottom-right → right-middle. Tap each tile to rotate.</p>}
           {status.won&&<button type="button" onClick={onComplete} className="mt-auto rounded-xl bg-[#a8e7d5] px-4 py-4 text-base font-bold text-[#092923] hover:bg-[#d1fff1]">Continue mission →</button>}
