@@ -520,7 +520,7 @@ export default function App() {
           if(elapsedIntro>=10.2){
             introRef.current.active=false;
             setIntroCinematic(false);
-            setNovaMessage({id:'pix-first-steps',speaker:'PIX',text:'I’m PIX! First, explore our station. Try the glowing table, or open the Science Academy on the wall to learn how everything works.',priority:'info'});
+            setNovaMessage({id:'pix-first-steps',speaker:'NOVA',text:'Welcome, explorer! Activate the hub table or visit the Science Academy on the wall. PIX will be your guide.',priority:'normal'});
           }
         }
         habitat.update(dt, player.position, currentState);
@@ -711,7 +711,7 @@ export default function App() {
       )}
 
       {introCinematic && !inMenu && (
-        <ArrivalCinematic elapsed={cinematicElapsed} onSkip={()=>{introRef.current.active=false;setIntroCinematic(false);setNovaMessage({id:'pix-after-intro',speaker:'PIX',text:'Welcome, explorer! Follow the floor trail to wake the station, and meet the crew. The Science Academy is on the hub wall!',priority:'info'});}}/>
+        <ArrivalCinematic elapsed={cinematicElapsed} onSkip={()=>{introRef.current.active=false;setIntroCinematic(false);setNovaMessage({id:'pix-after-intro',speaker:'NOVA',text:'Welcome! Follow the light trail to wake the station. Visit the Science Academy on the hub wall and meet PIX.',priority:'normal'});}}/>
       )}
 
       {/* In-Game HUD Overlay */}
