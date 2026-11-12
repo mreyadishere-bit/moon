@@ -354,10 +354,10 @@ export class HabitatBuilder {
     const map=new THREE.CanvasTexture(canvas);
     map.colorSpace=THREE.SRGBColorSpace;
     map.wrapS=THREE.RepeatWrapping;map.wrapT=THREE.RepeatWrapping;
-    map.repeat.set(4,2);map.anisotropy=Math.min(this.renderer.capabilities.getMaxAnisotropy(),8);
+    map.repeat.set(1,1);map.anisotropy=Math.min(this.renderer.capabilities.getMaxAnisotropy(),8);
     const bump=new THREE.CanvasTexture(bumpCanvas);
     bump.wrapS=THREE.RepeatWrapping;bump.wrapT=THREE.RepeatWrapping;
-    bump.repeat.set(4,2);
+    bump.repeat.set(1,1);
     return {map,bump};
   }
 
