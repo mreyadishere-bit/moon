@@ -424,7 +424,7 @@ export default function App() {
         candidate.outputColorSpace = THREE.SRGBColorSpace;
         candidate.toneMapping = THREE.ACESFilmicToneMapping;
         candidate.toneMappingExposure = 0.86; // Retain material detail in bright lunar station panels
-        candidate.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        candidate.setPixelRatio(Math.min(window.devicePixelRatio || 1, window.innerWidth<850?1.15:1.55));
         candidate.setSize(window.innerWidth, window.innerHeight);
         candidate.shadowMap.enabled = true;
         candidate.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -537,7 +537,7 @@ export default function App() {
         // Children must not lose the habitat merely because they are reading instructions.
         if (!activeModalRef.current) SimulationEngine.step(currentState, dt);
         uiSyncAccumulator += dt;
-        if (uiSyncAccumulator >= 0.1) {
+        if (uiSyncAccumulator >= 0.25) {
           uiSyncAccumulator = 0;
           setPlayerYaw(player.yaw);
           setPlayerPosState({ x: player.position.x, z: player.position.z });
@@ -554,7 +554,7 @@ export default function App() {
         if (introRef.current.active && !inMenuRef.current) {
           const elapsedIntro=introRef.current.elapsed=Math.min(10.2,introRef.current.elapsed+dt);
           const p=THREE.MathUtils.smoothstep(elapsedIntro/10.2,0,1);
-          camera.position.set(THREE.MathUtils.lerp(4.5,0,p),THREE.MathUtils.lerp(2.65,1.7,p),THREE.MathUtils.lerp(5.1,3.6,p));
+          camera.position.set(THREE.MathUtils.lerp(4.1,-3.0,p),THREE.MathUtils.lerp(2.65,1.7,p),THREE.MathUtils.lerp(5.5,5.2,p));
           camera.lookAt(0,1.45,-0.4);
           if(Math.round(elapsedIntro*10)%3===0) setCinematicElapsed(elapsedIntro);
           if(elapsedIntro>=10.2){
