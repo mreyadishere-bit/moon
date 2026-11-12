@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 /**
  * StationCrew — 3D Character Models and Behaviors
@@ -59,16 +60,16 @@ export class StationCrew {
   /* -------------------------------------------------------------------------- */
   private buildMayaChen(): void {
     // Placed in the Radiation Shelter near the console (0, 0, 18.5)
-    this.mayaGroup.position.set(2.4, 0, 18.2);
+    this.mayaGroup.position.set(3.0, 0, -1.7); // Maya welcomes new players in the hub
     this.mayaGroup.rotation.y = -Math.PI * 0.75; // Looking toward entrance
 
     const suitWhite = new THREE.MeshStandardMaterial({
-      color: 0xedf2f7,
+      color: 0xe8ecea,
       roughness: 0.45,
       metalness: 0.15,
     });
     const suitOrange = new THREE.MeshStandardMaterial({
-      color: 0xdd6b20,
+      color: 0xc99a6f,
       roughness: 0.5,
       metalness: 0.1,
     });
@@ -78,10 +79,10 @@ export class StationCrew {
       metalness: 0.3,
     });
     const goldVisorMat = new THREE.MeshStandardMaterial({
-      color: 0xd69e2e,
+      color: 0xbaa27a,
       roughness: 0.1,
       metalness: 0.95,
-      emissive: 0xb7791f,
+      emissive: 0x967853,
       emissiveIntensity: 0.3,
     });
 
@@ -93,7 +94,7 @@ export class StationCrew {
       this.mayaGroup.add(boot);
 
       // Leg
-      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.65, 0.22), suitWhite);
+      const leg = new THREE.Mesh(new RoundedBoxGeometry(0.2, 0.65, 0.22, 4, 0.065), suitWhite);
       leg.position.set(xOffset, 0.48, 0);
       this.mayaGroup.add(leg);
 
@@ -108,7 +109,7 @@ export class StationCrew {
     pelvis.position.y = 0.85;
     this.mayaGroup.add(pelvis);
 
-    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.62, 0.36), suitWhite);
+    const torso = new THREE.Mesh(new RoundedBoxGeometry(0.58, 0.62, 0.36, 5, 0.1), suitWhite);
     torso.position.y = 1.22;
     this.mayaGroup.add(torso);
 
@@ -132,7 +133,7 @@ export class StationCrew {
     this.mayaGroup.add(o2Led);
 
     // 3. Helmet & Gold Visor
-    const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.26, 16, 16), suitWhite);
+    const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.26, 32, 24), suitWhite);
     helmet.position.y = 1.72;
     this.mayaGroup.add(helmet);
 
@@ -158,7 +159,7 @@ export class StationCrew {
     this.mayaLeftArm = new THREE.Group();
     this.mayaLeftArm.position.set(-0.36, 1.44, 0);
 
-    const lArm = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.5, 0.16), suitWhite);
+    const lArm = new THREE.Mesh(new RoundedBoxGeometry(0.15, 0.5, 0.16, 4, 0.055), suitWhite);
     lArm.position.y = -0.22;
     this.mayaLeftArm.add(lArm);
     this.mayaLeftArm.rotation.x = -0.55;
@@ -169,7 +170,7 @@ export class StationCrew {
     this.mayaRightArm = new THREE.Group();
     this.mayaRightArm.position.set(0.36, 1.44, 0);
 
-    const rArm = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.5, 0.16), suitWhite);
+    const rArm = new THREE.Mesh(new RoundedBoxGeometry(0.15, 0.5, 0.16, 4, 0.055), suitWhite);
     rArm.position.y = -0.22;
     this.mayaRightArm.add(rArm);
     this.mayaRightArm.rotation.x = -0.45;
@@ -194,7 +195,7 @@ export class StationCrew {
     this.mayaGroup.add(this.mayaTablet);
 
     // Floating Nametag Above Head
-    this.addFloatingLabel(this.mayaGroup, 'DR. MAYA CHEN · SCIENTIST', '#E8AD66');
+    this.addFloatingLabel(this.mayaGroup, 'DR. MAYA CHEN · SCIENTIST', '#D6B68A');
   }
 
   /* -------------------------------------------------------------------------- */
@@ -206,12 +207,12 @@ export class StationCrew {
     this.leoGroup.rotation.y = Math.PI * 0.4;
 
     const suitNavy = new THREE.MeshStandardMaterial({
-      color: 0x1e3a5f,
+      color: 0x304f65,
       roughness: 0.5,
       metalness: 0.2,
     });
     const highVisYellow = new THREE.MeshStandardMaterial({
-      color: 0xeab308,
+      color: 0xcaa572,
       roughness: 0.3,
       metalness: 0.1,
     });
@@ -227,18 +228,18 @@ export class StationCrew {
       boot.position.set(xOffset, 0.1, 0.04);
       this.leoGroup.add(boot);
 
-      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.65, 0.24), suitNavy);
+      const leg = new THREE.Mesh(new RoundedBoxGeometry(0.22, 0.65, 0.24, 4, 0.065), suitNavy);
       leg.position.set(xOffset, 0.48, 0);
       this.leoGroup.add(leg);
     });
 
     // 2. Torso with High-Vis Safety Vest
-    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.65, 0.38), suitNavy);
+    const torso = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.65, 0.38, 4, 0.085), suitNavy);
     torso.position.y = 1.25;
     this.leoGroup.add(torso);
 
     // Yellow Safety Vest
-    const vest = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.45, 0.4), highVisYellow);
+    const vest = new THREE.Mesh(new RoundedBoxGeometry(0.64, 0.45, 0.4, 4, 0.065), highVisYellow);
     vest.position.y = 1.3;
     this.leoGroup.add(vest);
 
@@ -269,7 +270,7 @@ export class StationCrew {
     // 4. Arms & Diagnostic Multimeter Tool
     this.leoLeftArm = new THREE.Group();
     this.leoLeftArm.position.set(-0.38, 1.48, 0);
-    const lArm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.52, 0.18), suitNavy);
+    const lArm = new THREE.Mesh(new RoundedBoxGeometry(0.16, 0.52, 0.18, 4, 0.06), suitNavy);
     lArm.position.y = -0.22;
     this.leoLeftArm.add(lArm);
     this.leoLeftArm.rotation.x = -0.6;
@@ -277,7 +278,7 @@ export class StationCrew {
 
     this.leoRightArm = new THREE.Group();
     this.leoRightArm.position.set(0.38, 1.48, 0);
-    const rArm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.52, 0.18), suitNavy);
+    const rArm = new THREE.Mesh(new RoundedBoxGeometry(0.16, 0.52, 0.18, 4, 0.06), suitNavy);
     rArm.position.y = -0.22;
     this.leoRightArm.add(rArm);
     this.leoRightArm.rotation.x = -0.7;
@@ -295,7 +296,7 @@ export class StationCrew {
     this.leoTool.add(tip);
     this.leoGroup.add(this.leoTool);
 
-    this.addFloatingLabel(this.leoGroup, 'LEO · CHIEF ENGINEER', '#EAB308');
+    this.addFloatingLabel(this.leoGroup, 'LEO · CHIEF ENGINEER', '#D6B68A');
   }
 
   /* -------------------------------------------------------------------------- */
@@ -307,12 +308,12 @@ export class StationCrew {
     this.sproutGroup.rotation.y = Math.PI * 0.25;
 
     const botGreen = new THREE.MeshStandardMaterial({
-      color: 0x48bb78,
+      color: 0x75b299,
       roughness: 0.3,
       metalness: 0.4,
     });
     const botWhite = new THREE.MeshStandardMaterial({
-      color: 0xf7fafc,
+      color: 0xe5eae7,
       roughness: 0.2,
       metalness: 0.5,
     });
@@ -412,7 +413,7 @@ export class StationCrew {
 
     this.sproutGroup.add(arm);
 
-    this.addFloatingLabel(this.sproutGroup, 'SPROUT · BOTANY ROBOT', '#68D391');
+    this.addFloatingLabel(this.sproutGroup, 'SPROUT · BOTANY ROBOT', '#89BE96');
   }
 
   /* -------------------------------------------------------------------------- */
@@ -458,12 +459,15 @@ export class StationCrew {
   /* -------------------------------------------------------------------------- */
   /* ANIMATION & IDLE BEHAVIORS                                                 */
   /* -------------------------------------------------------------------------- */
-  public update(dt: number, playerPos: THREE.Vector3): void {
+  public update(dt: number, playerPos: THREE.Vector3, chapter: number): void {
     this.time += dt;
     const t = this.time;
+    // Maya greets players in the hub before moving to the protected shelter.
+    const mayasDestination = chapter >= 5 ? new THREE.Vector3(2.4, 0, 18.2) : new THREE.Vector3(3.0, 0, -1.7);
+    this.mayaGroup.position.copy(mayasDestination);
 
     // 1. Dr. Maya Chen: Subtle breathing & datapad tilt
-    this.mayaGroup.position.y = Math.sin(t * 1.8) * 0.012;
+    this.mayaGroup.position.y += Math.sin(t * 1.8) * 0.012;
     if (this.mayaTablet) {
       this.mayaTablet.rotation.x = 0.45 + Math.sin(t * 1.5) * 0.04;
     }
@@ -532,7 +536,7 @@ export class StationCrew {
           portrait: '👩‍🚀',
           lines: [
             "Welcome to LUNA-7! I'm so glad you made it safely through the airlock.",
-            "Living on the Moon is wonderful, but we're outside Earth's protective blanket. We have no atmosphere to breathe or block solar radiation.",
+            "Living on the Moon is wonderful, but there's almost no atmosphere. We need breathable air and protection from radiation.",
             "That's why our habitat needs smart energy and thick shielding. With your help, we're going to keep this station safe!",
           ],
         };
@@ -543,7 +547,7 @@ export class StationCrew {
           portrait: '🧑‍🔧',
           lines: [
             "Hey there, Junior Astronaut! Welcome to the Power Core.",
-            "See these big lithium-sulfur battery racks? They store power when the Sun is shining so we don't go dark during lunar night.",
+            "See these battery racks? They store electricity for when sunlight is not helping us.",
             "Remember: every kilowatt counts! If we give more power to the greenhouse lights, the batteries drain faster. It's all about balance!",
           ],
         };
@@ -554,8 +558,8 @@ export class StationCrew {
           portrait: '🌱',
           lines: [
             "*BEEP-BOOP-WHIRR!* Happy photosynthesis, human friend!",
-            "Our leafy crops breathe in carbon dioxide and give us crisp, fresh oxygen. Plus tasty lunar salad!",
-            "I keep the irrigation loop closed so 96% of water vapor is reclaimed back to clean drinking water. Don't let the valve leak!",
+            "Plants can use carbon dioxide and release oxygen in the light. But our air machines still keep everyone safe!",
+            "Our water recovery system saves a lot of water. Let's keep our valves closed so less of it escapes!",
           ],
         };
     }
