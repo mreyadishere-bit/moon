@@ -3,17 +3,25 @@
  * Scientific references are explicit. The habitat resource model is FICTIONAL,
  * with declared assumptions: never call its scores NASA measurements.
  */
+import nasaDataset from '../science/nasaDataset.json';
+
 export type StoryBranch = 'energy' | 'air' | 'weather';
 export type LearningStage = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type TrainingEnding = 'brilliant' | 'compromise' | 'retry';
 export type ChoiceId = 'store' | 'grow' | 'breathe' | 'scrub' | 'rest' | 'recycle' | 'lights' | 'shelter' | 'scan' | 'ask' | 'act';
 
+const nasaRecord = (id:string) => {
+  const record = nasaDataset.records.find(r => r.id === id);
+  if (!record) throw new Error('NASA source record missing: ' + id);
+  return record;
+};
+/** Source-of-truth values come from a checked-in, auditable NASA provenance snapshot. */
 export const NASA_OBSERVATIONS = {
-  lunarGravityMs2: { value: 1.62, unit: 'm/s²', label: 'Surface gravity of the Moon', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html' },
-  earthGravityMs2: { value: 9.80, unit: 'm/s²', label: 'Surface gravity of Earth', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html' },
-  earthMoonDistanceKm: { value: 384400, unit: 'km', label: 'Average distance to the Moon', url: 'https://science.nasa.gov/moon/facts/' },
-  solarIrradianceWm2: { value: 1361, unit: 'W/m²', label: 'Solar irradiance near the Moon at approximately 1 AU', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html' },
-  stormPeakKp: { value: 9, unit: 'Kp index', label: 'Peak Earth geomagnetic Kp, May 2024 event', url: 'https://ccmc.gsfc.nasa.gov/storms/may2024/' },
+  lunarGravityMs2: { value:nasaRecord('lunarGravityMs2').value, unit:'m/s²', label:'Surface gravity of the Moon', url:nasaRecord('lunarGravityMs2').source },
+  earthGravityMs2: { value:nasaRecord('earthGravityMs2').value, unit:'m/s²', label:'Surface gravity of Earth', url:nasaRecord('earthGravityMs2').source },
+  earthMoonDistanceKm: { value:nasaRecord('earthMoonDistanceKm').value, unit:'km', label:'Average distance to the Moon', url:nasaRecord('earthMoonDistanceKm').source },
+  solarIrradianceWm2: { value:nasaRecord('solarIrradianceWm2').value, unit:'W/m²', label:'Solar irradiance near the Moon at approximately 1 AU', url:nasaRecord('solarIrradianceWm2').source },
+  stormPeakKp: { value:nasaRecord('stormPeakKp').value, unit:'Kp index', label:'Peak Earth geomagnetic Kp, May 2024 event', url:nasaRecord('stormPeakKp').source },
 } as const;
 
 /** Physics: distances in meters; no game balancing in this function. */
@@ -27,8 +35,8 @@ export function oneWayMoonSignalSeconds(): number {
 }
 /** NASA irradiance with explicitly fictional panel assumptions. Result is kW (power). */
 export function exampleSolarPowerKw(sunlightPct: number): number {
-  const areaM2 = 8; // fictional colony: 8 square meter teaching array
-  const efficiency = 0.20; // simplifying hypothetical efficiency
+  const areaM2 = nasaDataset.teachingAssumptions.panelAreaM2; // fictional colony teaching array
+  const efficiency = nasaDataset.teachingAssumptions.panelEfficiency; // hypothetical panel efficiency
   return NASA_OBSERVATIONS.solarIrradianceWm2.value * areaM2 * efficiency * Math.max(0,Math.min(sunlightPct,100))/100/1000;
 }
 export const STORY_STAGES = [
@@ -96,7 +104,7 @@ export function trainWithDecision(previous: AdventureState,id:ChoiceId|string,la
       consequence='You compared the same fall time on the Moon and on Earth using NASA gravity data.';
       break;
     case 2: {
-      const generatedKwh=exampleSolarPowerKw(previous.sunlightPct)*4; // fictional four-hour illumination window
+      const generatedKwh=exampleSolarPowerKw(previous.sunlightPct)*nasaDataset.teachingAssumptions.illuminationWindowHours; // fictional lesson window
       const allocation=id==='breathe'?11:id==='grow'?12:id==='store'?3:-1;
       if(allocation<0)return previous;
       next.batteryKwh=cap(previous.batteryKwh+generatedKwh-allocation,0,60);
