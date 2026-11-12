@@ -58,6 +58,9 @@ const ProgressMeter=({label,value,color,unit='%'}:{label:string;value:number;col
 export const AdventureAcademy:React.FC<Props>=({onClose,onDecision,onExplore})=>{
   const [state,setState]=useState<AdventureState>(readAdventure);
   const [observed,setObserved]=useState(false);
+  const [airFlowDemo,setAirFlowDemo]=useState(25);
+  const [plantDemo,setPlantDemo]=useState({water:30,light:30});
+  const [shelterDemo,setShelterDemo]=useState<'thin'|'prepared'|null>(null);
   const [signalSent,setSignalSent]=useState(false);
   const [sourceOpen,setSourceOpen]=useState(false);
   const [lastConsequence,setLastConsequence]=useState('');
@@ -68,14 +71,14 @@ export const AdventureAcademy:React.FC<Props>=({onClose,onDecision,onExplore})=>
     stage===2?[NASA_OBSERVATIONS.solarIrradianceWm2]:stage===5?[NASA_OBSERVATIONS.stormPeakKp]:
     stage===6?[NASA_OBSERVATIONS.earthMoonDistanceKm]:[];
   const choose=(opt:Option)=>{
-    if(stage===1&&!observed)return;
+    if([1,2,3,4,5].includes(stage)&&!observed)return;
     if(stage===6&&!signalSent)return;
     const next=trainWithDecision(state,opt.id,opt.label);
     if(next===state)return;
     const newChoice=next.choices[next.choices.length-1];
     setLastConsequence(newChoice.consequence);
     setState(next);
-    setObserved(false);setSignalSent(false);setSourceOpen(false);
+    setObserved(false);setSignalSent(false);setSourceOpen(false);setShelterDemo(null);
     onDecision(stage,opt.id,next);
   };
   const setExperimental=(key:'sunlightPct'|'dropTimeSeconds'|'experimentWorld',value:number|string)=>setState(s=>({...s,[key]:value}));
@@ -120,9 +123,50 @@ export const AdventureAcademy:React.FC<Props>=({onClose,onDecision,onExplore})=>
               </section>}
               {stage===2&&<section style={miniCard} className="space-y-4">
                 <h3 className="font-semibold">Experiment: move the Sunlight slider</h3>
-                <label className="block text-sm text-[#c7dce8]">Sunlight reaching our example panels: <strong>{state.sunlightPct}%</strong><input type="range" min="0" max="100" step="5" value={state.sunlightPct} onChange={e=>setExperimental('sunlightPct',Number(e.target.value))} className="mt-3 w-full accent-[#e9b56d]"/></label>
+                <label className="block text-sm text-[#c7dce8]">Sunlight reaching our example panels: <strong>{state.sunlightPct}%</strong><input type="range" min="0" max="100" step="5" value={state.sunlightPct} onChange={e=>{setExperimental('sunlightPct',Number(e.target.value));setObserved(true)}} className="mt-3 w-full accent-[#e9b56d]"/></label>
                 <div className="grid grid-cols-2 gap-3"><div className="rounded-xl bg-[#0a1b27] p-4"><p className="text-[11px] text-[#adccdc]">Example solar generation</p><p className="mt-1 text-2xl font-semibold">{exampleSolarPowerKw(state.sunlightPct).toFixed(2)} kW</p></div><div className="rounded-xl bg-[#0a1b27] p-4"><p className="text-[11px] text-[#adccdc]">Energy in 4 simulated hours</p><p className="mt-1 text-2xl font-semibold">{(exampleSolarPowerKw(state.sunlightPct)*4).toFixed(1)} kWh</p></div></div>
                 <p className="text-xs text-[#adc3d2]">NASA input: 1,361 W/m². Example assumptions: 8 m² panels, 20% efficiency, four hours. These are NOT actual LUNA-7 engineering specifications.</p>
+              </section>}
+              {stage===3&&<section style={miniCard} className="space-y-4">
+                <h3 className="text-base font-semibold">Try it: how fast is the fan running?</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-[#122b3a] p-4">
+                    <p className="text-[11px] text-[#a9cce0]">Airflow in our example model</p>
+                    <p className="mt-1 text-3xl font-semibold">{airFlowDemo}%</p>
+                    <div className="mt-3 h-2 rounded-full bg-[#385366]"><div className="h-full rounded-full bg-[#8accdf]" style={{width:airFlowDemo+'%'}}/></div>
+                  </div>
+                  <div className="rounded-xl bg-[#122b3a] p-4">
+                    <p className="text-[11px] text-[#a9cce0]">Air cleaning support</p>
+                    <p className="mt-1 text-3xl font-semibold">{Math.round(airFlowDemo*.85)}%</p>
+                    <p className="mt-1 text-xs text-[#b5d4df]">Illustrative training score</p>
+                  </div>
+                </div>
+                <label className="block text-sm text-[#c5d9e5]">Move the fan-power slider:
+                  <input type="range" min="0" max="100" step="10" value={airFlowDemo} onChange={e=>{setAirFlowDemo(Number(e.target.value));setObserved(true)}} className="mt-3 w-full accent-[#87c9e3]"/>
+                </label>
+                <div className="flex flex-wrap gap-3 text-2xl" aria-label="Airflow animation">{Array.from({length:8},(_,i)=><span key={i} style={{color:i<Math.round(airFlowDemo/12.5)?'#89d7dd':'#4b6374'}}>➜</span>)}</div>
+                <p className="text-xs leading-5 text-[#b5cbd9]">This is an illustrative air-circulation score, not a carbon-dioxide concentration measurement. More fan power may support circulation, but real life support also needs filtration and oxygen equipment.</p>
+              </section>}
+              {stage===4&&<section style={miniCard} className="space-y-4">
+                <h3 className="text-base font-semibold">Try it: what do our little plants need?</h3>
+                <div className="flex h-32 items-end justify-center gap-4 overflow-hidden rounded-xl bg-gradient-to-b from-[#162b3b] to-[#204535] p-4">
+                  {Array.from({length:6},(_,i)=><div key={i} className="flex flex-col items-center justify-end" style={{height:20+Math.min(plantDemo.water,plantDemo.light)*.65+i*3}}>
+                    <span className="text-2xl text-[#a2e6b1]">✿</span><span className="h-full w-1.5 rounded-t-full bg-[#81ae88]"/></div>)}
+                </div>
+                <label className="block text-sm">Water to the seedlings: {plantDemo.water}%<input type="range" min="0" max="100" step="10" value={plantDemo.water} onChange={e=>{setPlantDemo(p=>({...p,water:Number(e.target.value)}));setObserved(true)}} className="mt-2 w-full accent-[#88c7e4]"/></label>
+                <label className="block text-sm">Grow lights: {plantDemo.light}%<input type="range" min="0" max="100" step="10" value={plantDemo.light} onChange={e=>{setPlantDemo(p=>({...p,light:Number(e.target.value)}));setObserved(true)}} className="mt-2 w-full accent-[#e4c18e]"/></label>
+                <p className="text-sm text-[#bdddc7]">Training-model plant support: {Math.min(plantDemo.water,plantDemo.light)} / 100</p>
+                <p className="text-xs leading-5 text-[#b7d0db]">A deliberately simplified illustration: real plants respond to many factors, including species, nutrients, spectrum, temperature and time. These percentages are not NASA crop setpoints.</p>
+              </section>}
+              {stage===5&&<section style={miniCard} className="space-y-3">
+                <h3 className="text-base font-semibold">Try it: where should the crew wait?</h3>
+                <p className="text-sm leading-6 text-[#c8dbe5]">Choose a shelter example and see how the preparation differs.</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button type="button" onClick={()=>{setShelterDemo('thin');setObserved(true)}} className={'rounded-2xl border p-4 text-left text-sm '+(shelterDemo==='thin'?'border-[#e3b3a0] bg-[#4b353e]':'border-white/20 bg-[#253446]')}><span className="mb-2 block text-2xl">▢</span><strong>Thin window area</strong><span className="mt-1 block text-xs text-[#c6d7e0]">A nice view, but not our safest place during a particle-event drill.</span></button>
+                  <button type="button" onClick={()=>{setShelterDemo('prepared');setObserved(true)}} className={'rounded-2xl border p-4 text-left text-sm '+(shelterDemo==='prepared'?'border-[#a7dfca] bg-[#2a5048]':'border-white/20 bg-[#253446]')}><span className="mb-2 block text-2xl">▣</span><strong>Prepared interior shelter</strong><span className="mt-1 block text-xs text-[#c6d7e0]">An enclosed area with appropriate protective material between us and the hazard.</span></button>
+                </div>
+                {shelterDemo&&<p role="status" className="rounded-xl bg-[#203746] p-3 text-sm leading-6">{shelterDemo==='prepared'?'Good preparation! An interior shielded shelter is a more sensible option in this qualitative learning example.':'The window is wonderful for looking at Earth, but the crew should prepare and use the more protective interior shelter.'}</p>}
+                <p className="text-xs leading-5 text-[#aac7d9]">This teaching activity does NOT calculate crew radiation dose or guarantee protection for a real solar event.</p>
               </section>}
               {stage===5&&<div className="rounded-2xl border border-[#e1b4ad]/30 bg-[#3b2936]/60 p-4">
                 <p className="text-xs font-bold tracking-wider text-[#ffd0b4]">REAL NASA HISTORICAL RECORD · MAY 2024</p>
@@ -137,10 +181,10 @@ export const AdventureAcademy:React.FC<Props>=({onClose,onDecision,onExplore})=>
               </section>}
               {stage<7&&<section className="space-y-3" aria-label="Your next decision">
                 <h3 className="text-xs font-bold uppercase tracking-[.18em] text-[#a9c1d0]">{stage===1?'After you try the experiment':'What should we do next?'}</h3>
-                <div className="grid gap-3 sm:grid-cols-2">{optionsFor(stage).map(o=><button key={o.id} type="button" disabled={(stage===1&&!observed)||(stage===6&&!signalSent)} onClick={()=>choose(o)} className="group rounded-2xl border border-[#698da2]/35 bg-[#1a3446]/80 p-4 text-left transition duration-150 hover:-translate-y-0.5 hover:border-[#a6d7e5] hover:bg-[#274b60] disabled:cursor-not-allowed disabled:opacity-50">
+                <div className="grid gap-3 sm:grid-cols-2">{optionsFor(stage).map(o=><button key={o.id} type="button" disabled={([1,2,3,4,5].includes(stage)&&!observed)||(stage===6&&!signalSent)} onClick={()=>choose(o)} className="group rounded-2xl border border-[#698da2]/35 bg-[#1a3446]/80 p-4 text-left transition duration-150 hover:-translate-y-0.5 hover:border-[#a6d7e5] hover:bg-[#274b60] disabled:cursor-not-allowed disabled:opacity-50">
                   <span className="mb-2 block text-2xl text-[#f1cea1]">{o.glyph}</span><strong className="block text-base">{o.label}</strong><span className="mt-1 block text-sm leading-5 text-[#c3d9e6]">{o.caption}</span><span className="mt-2 block text-xs leading-5 text-[#a3c3cd]">{o.effect}</span>
                 </button>)}</div>
-                {stage===1&&!observed&&<p className="text-xs text-[#f1d6a7]">Try switching Earth/Moon or moving the time slider before continuing.</p>}
+                {[1,2,3,4,5].includes(stage)&&!observed&&<p className="text-xs text-[#f1d6a7]">Try the experiment above before choosing your next action.</p>}
                 {stage===6&&!signalSent&&<p className="text-xs text-[#f1d6a7]">Send the test signal first!</p>}
               </section>}
               {stage===7&&<section className="space-y-4">
