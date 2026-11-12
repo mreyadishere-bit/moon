@@ -27,9 +27,10 @@ import { MainMenu } from './ui/MainMenu';
 import { MissionDebrief } from './ui/MissionDebrief';
 import { ScienceModal } from './ui/ScienceModal';
 import { SettingsModal } from './ui/SettingsModal';
-import { CharacterDialogue, StationCrew } from './characters/StationCrew';
+import { StationCrew } from './characters/StationCrew';
+import { CrewId } from './ai/crewKnowledge';
+import { CrewConversation } from './ui/CrewConversation';
 import { PixCompanion } from './characters/PixCompanion';
-import { DialogueModal } from './ui/DialogueModal';
 import { ObservationModal } from './ui/ObservationModal';
 import { Canvas2DRenderer } from './world/Canvas2DRenderer';
 import { HabitatBuilder, InteractiveTarget } from './world/HabitatBuilder';
@@ -59,7 +60,8 @@ export default function App() {
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [showGuidebookModal, setShowGuidebookModal] = useState<boolean>(false);
   const [guidebookTab, setGuidebookTab] = useState<'mission' | 'map' | 'controls' | 'discoveries' | 'science'>('mission');
-  const [activeDialogue, setActiveDialogue] = useState<CharacterDialogue | null>(null);
+  const [activeCrew, setActiveCrew] = useState<CrewId | null>(null);
+  const [crewGreeting, setCrewGreeting] = useState<string>('');
   const [playerYaw, setPlayerYaw] = useState<number>(0);
   const [playerPosState, setPlayerPosState] = useState<{ x: number; z: number }>({ x: 0, z: 0 });
   const [settings, setSettings] = useState<GameSettings>(() =>
@@ -86,7 +88,7 @@ export default function App() {
     Boolean(activeRepair) ||
     showAcademy ||
     introCinematic ||
-    Boolean(activeDialogue) ||
+    Boolean(activeCrew) ||
     showObservationModal ||
     showScienceModal ||
     showSettingsModal ||
@@ -221,7 +223,8 @@ export default function App() {
             ? 'Thank you for preparing the shelter. When conditions might be dangerous, crew safety comes first.'
             : 'You checked the instruments. That helps us understand an alert, but monitoring is not a substitute for shelter preparedness.');
         }
-        setActiveDialogue(dialogue);
+        setCrewGreeting(dialogue.lines.slice(0,2).join(' '));
+        setActiveCrew(t.characterId as CrewId);
         pixRef.current?.say(`Talking to ${dialogue.speaker}!`, 3);
         return;
       }
@@ -325,8 +328,8 @@ export default function App() {
           setActiveRepair(null);
         } else if (showObservationModal) {
           setShowObservationModal(false);
-        } else if (activeDialogue) {
-          setActiveDialogue(null);
+        } else if (activeCrew) {
+          setActiveCrew(null);
         } else if (showGuidebookModal) {
           setShowGuidebookModal(false);
         } else if (activeChallenge) {
@@ -364,7 +367,7 @@ export default function App() {
     activeRepair,
     showAcademy,
     introCinematic,
-    activeDialogue,
+    activeCrew,
     showObservationModal,
     showScienceModal,
     showSettingsModal,
@@ -611,6 +614,7 @@ export default function App() {
     setAdvancedConsole(false);
     resetAdventure();
     setShowAcademy(false);
+    setActiveCrew(null);
     introRef.current={active:true,elapsed:0};
     setCinematicElapsed(0);
     setIntroCinematic(true);
@@ -789,11 +793,30 @@ export default function App() {
         />
       )}
 
-      {/* Crew Character Interactive Dialogue */}
-      {activeDialogue && (
-        <DialogueModal
-          dialogue={activeDialogue}
-          onClose={() => setActiveDialogue(null)}
+      {/* In-world character conversations dock to the edge, never covering the scene's center. */}
+      {!inMenu && !introCinematic && !missionState.stormEvaluated && !activeCrew && !showAcademy && (
+        <button type="button" onClick={() => {setActiveCrew('pix');setCrewGreeting('');}}
+          aria-label="Talk to PIX the companion"
+          className="fixed bottom-5 right-5 z-40 flex min-h-11 items-center gap-2 rounded-full border border-[#8cb9c7]/50 bg-[#143043]/95 px-4 py-3 text-sm font-semibold text-[#e6f3f6] shadow-2xl transition hover:bg-[#295066]">
+          <span aria-hidden="true">✦</span> Talk to PIX <span className="text-[#a3cad8]">🎙</span>
+        </button>
+      )}
+      {activeCrew && !inMenu && !introCinematic && !missionState.stormEvaluated && (
+        <CrewConversation key={activeCrew} character={activeCrew}
+          context={{
+            room:missionState.currentRoom,
+            chapter:missionState.currentChapter,
+            objective:StoryDirector.getCurrentObjective(missionState).title,
+            nearby:focusedTarget?.title||'',
+            power:missionState.telemetry.batteryPct,
+            air:missionState.telemetry.oxygenReservePct,
+            shelter:missionState.telemetry.shieldingIntegrityPct,
+            choices:readAdventure().choices.slice(-4).map(c=>c.label)
+          }}
+          greeting={crewGreeting||undefined}
+          muted={settings.muted}
+          onClose={()=>setActiveCrew(null)}
+          onOpenAcademy={()=>{setActiveCrew(null);setShowAcademy(true);}}
         />
       )}
 
