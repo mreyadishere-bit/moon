@@ -183,30 +183,28 @@ export const HUD: React.FC<HUDProps> = ({
             )}
           </div>
 
-          {/* Contextual Interaction Card (only visible when aiming at an interactable within reach) */}
+          {/* Compact kid-friendly world prompt: never cover the scene. */}
           {focusedTarget && (
-            <div className="mt-5 pointer-events-auto border border-[#E8AD66] bg-[#101820]/95 backdrop-blur-md px-5 py-3 text-center shadow-2xl max-w-sm rounded-xl">
-              <div className="flex items-center justify-center gap-2 text-[11px] font-mono-tabular uppercase tracking-wider text-[#E8AD66] font-bold">
-                <span className="w-2 h-2 bg-[#E8AD66] rounded-full animate-ping" />
-                <span>
-                  {focusedTarget.actionType === 'physical_toggle'
-                    ? '[E] Operate Switch / Valve'
-                    : '[E] Access Console'}
+            <div className="pointer-events-auto mt-3 max-w-[290px] rounded-2xl border border-[#d6b18a]/50 bg-[#0d2030]/92 px-3 py-2.5 text-center shadow-xl backdrop-blur-md">
+              <div className="flex items-center justify-center gap-2">
+                <span className="grid h-7 min-w-7 place-items-center rounded-lg bg-[#e6bc84] px-1 font-mono text-xs font-bold text-[#162733]">E</span>
+                <span className="truncate text-sm font-semibold text-[#f5f1e9]">
+                  {focusedTarget.actionType === 'academy' ? 'Science Academy' : focusedTarget.title}
                 </span>
               </div>
-              <div className="mt-1 text-sm font-bold text-[#E7E9E6] font-display tracking-wide">
-                {focusedTarget.title}
-              </div>
-              <div className="mt-0.5 text-xs text-[#8E999E]">{focusedTarget.subtitle}</div>
+              <p className="mt-1 line-clamp-1 text-xs leading-4 text-[#bed2dc]">
+                {focusedTarget.actionType === 'physical_toggle' ? 'Use this machine' :
+                  focusedTarget.actionType === 'dialogue' ? 'Talk to your crewmate' :
+                  focusedTarget.actionType === 'observation' ? 'Look through the telescope' :
+                  focusedTarget.actionType === 'academy' ? 'Discover the science of space' : 'Open the mission controls'}
+              </p>
               <button
                 type="button"
-                onClick={() => {
-                  soundFX.playClick(680);
-                  onInteract();
-                }}
-                className="mt-2.5 w-full bg-[#E8AD66] px-4 py-1.5 text-xs font-bold text-[#101820] hover:bg-[#f3be7c] transition-colors shadow-md uppercase tracking-wider"
+                onClick={() => { soundFX.playClick(680); onInteract(); }}
+                className="mt-2 min-h-9 w-full rounded-xl bg-[#d9b787] px-3 text-xs font-bold text-[#172c3a] transition hover:bg-[#f1d2a0]"
+                aria-label={`Interact with ${focusedTarget.title}`}
               >
-                Press E to interact
+                Interact ↗
               </button>
             </div>
           )}
