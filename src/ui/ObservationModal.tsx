@@ -11,10 +11,18 @@ export const ObservationModal: React.FC<{ onClose: () => void }> = ({ onClose })
   const mount = useRef<HTMLDivElement | null>(null);
   const [zoom, setZoom] = useState(1.25);
   const [autoRotate, setAutoRotate] = useState(true);
+  const [messageStatus, setMessageStatus] = useState<'idle' | 'sending' | 'received'>('idle');
   const zoomRef = useRef(zoom);
   const autoRef = useRef(autoRotate);
   zoomRef.current = zoom;
   autoRef.current = autoRotate;
+
+  // A simple *simulated* Earth-Moon round trip, not a live network request.
+  useEffect(() => {
+    if (messageStatus !== 'sending') return;
+    const timer = window.setTimeout(() => { soundFX.playSuccessChord(); setMessageStatus('received'); }, 2600);
+    return () => window.clearTimeout(timer);
+  }, [messageStatus]);
 
   useEffect(() => {
     const el = mount.current;
@@ -130,6 +138,13 @@ export const ObservationModal: React.FC<{ onClose: () => void }> = ({ onClose })
               <input id="observation-zoom" type="range" min="0.8" max="1.8" step="0.1" value={zoom} onChange={(e)=>setZoom(Number(e.target.value))} className="w-full accent-[#87c3d9]" />
             </div>
             <button type="button" onClick={()=>setAutoRotate(!autoRotate)} className="mt-4 text-sm text-[#8dc8e1] hover:text-white">{autoRotate ? 'Pause rotation' : 'Resume rotation'} · Drag the planet to explore</button>
+            <div className="mt-6 rounded-xl border border-[#8abdd0]/25 bg-[#1c3445]/50 p-4">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[#98cbd9]">TRY A SCIENCE EXPERIMENT</div>
+              <p className="mt-2 text-sm text-white">How long does it take to hear back from Earth?</p>
+              <button type="button" disabled={messageStatus === 'sending'} onClick={() => setMessageStatus('sending')} className="mt-3 rounded-lg bg-[#d3eaf0] px-4 py-2.5 text-xs font-bold text-[#172935] disabled:opacity-60">{messageStatus === 'sending' ? 'Waiting for the signal…' : messageStatus === 'received' ? 'Send another hello ↗' : 'Send hello to Earth ↗'}</button>
+              {messageStatus === 'received' && <p role="status" className="mt-3 text-sm leading-5 text-[#a8ddba]">"Hello, LUNA-7! We hear you!" The shortest possible light-speed round trip takes about 2.6 seconds.</p>}
+              {messageStatus === 'sending' && <p role="status" className="mt-3 text-xs text-[#adc5d6]">Our message is traveling across space and back. Even light needs time!</p>}
+            </div>
           </div>
           <div className="border-t border-white/10 pt-4 text-[11px] leading-5 text-[#8297a7]">NASA Blue Marble imagery (public NASA source); telescope is an educational magnified rendering, not a live camera feed. Average distance and delay vary with orbit.</div>
         </aside>
