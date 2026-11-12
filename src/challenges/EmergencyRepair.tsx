@@ -4,7 +4,6 @@ import { ChallengeId } from '../game/MissionState';
 type Direction = 0 | 1 | 2 | 3;
 type Cell = { ports: [Direction, Direction]; rotation: number; label: string; path: boolean };
 const directions = [[-1,0],[0,1],[1,0],[0,-1]];
-const pathIndices = [3,0,1,4,7,8,5];
 const actualPorts: Record<number, [Direction,Direction]> = {
   3:[3,0], 0:[2,1], 1:[3,2], 4:[0,2], 7:[0,1], 8:[3,0], 5:[2,1]
 };
@@ -71,7 +70,7 @@ export const EmergencyRepair:React.FC<{challengeId:ChallengeId;onComplete:()=>vo
               {cells.map((cell,i)=>{
                 const connectedTile=status.visited.has(i);
                 const p=ports(cell);
-                const shape=(d:Direction)=>{const rot=[0,-90,180,90][d];return <path key={d} d="M50 50 L50 2" transform={'rotate('+rot+' 50 50)'} />};
+                const shape=(d:Direction)=>{const rot=[0,90,180,270][d];return <path key={d} d="M50 50 L50 2" transform={'rotate('+rot+' 50 50)'} />};
                 return <button key={i} type="button" disabled={!cell.path||status.won} aria-label={cell.path?'Rotate connection '+(i+1):'Empty slot'} onClick={()=>rotateCell(i)}
                 className={'relative aspect-square rounded-xl border transition-all duration-200 '+(cell.path?'cursor-pointer active:scale-[.96] ':'cursor-default ')+(connectedTile?'border-[#9ae8cf] bg-[#153b3a] shadow-[inset_0_0_24px_rgba(81,205,169,.12)]':'border-[#3d5264] bg-[#1a2a3a] hover:border-white/35')}>
                   {cell.path&&<svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
