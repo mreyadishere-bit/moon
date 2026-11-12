@@ -52,6 +52,12 @@ export const HUD: React.FC<HUDProps> = ({
       {/* Subtle Cinematic Vignette */}
       <div className="fixed inset-0 pointer-events-none z-10 cinematic-vignette" />
 
+      {state.currentChapter >= 5 && !state.radiation.completed && (
+        <div className="pointer-events-none fixed right-4 top-24 z-20 max-w-[240px] rounded-xl border border-[#da7468]/60 bg-[#321e28]/90 px-4 py-3 text-xs text-[#ffdad0] shadow-xl backdrop-blur-md sm:right-6 sm:top-28">
+          <span className="mb-1 block font-bold uppercase tracking-[.13em]">⚠ TRAINING SCENARIO</span>
+          <span>Space weather alert. Prepare the shelter. No real-world emergency.</span>
+        </div>
+      )}
       {/* Main Gameplay Screen Overlay */}
       <div className="fixed inset-0 z-20 pointer-events-none flex flex-col justify-between p-4 md:p-6 select-none">
         {/* Top Header Bar: Clean 3-Zone Layout */}
