@@ -284,6 +284,13 @@ export const GuidebookModal: React.FC<GuidebookModalProps> = ({
                   )}
                 </div>
 
+                {/* New astronomy wing and connecting passage */}
+                <div className="absolute top-[64%] right-[15%] h-[12%] w-[5%] bg-[#284052]" />
+                <div className="absolute bottom-[4%] right-[4%] h-[21%] w-[24%] border-2 border-[#a6bdde] bg-[#1d2b40]/90 flex flex-col items-center justify-center text-center p-1">
+                  <span className="text-[10px] font-bold text-[#e9f2fa]">PLANETARIUM</span>
+                  <span className="text-[9px] text-[#b4cee8]">8 planets • Gravity lab</span>
+                  <span className="text-[9px] text-[#9bcada]">OPEN FOR EXPLORATION</span>
+                </div>
                 {/* Corridors */}
                 <div className="absolute top-[28%] left-[46%] w-[8%] h-[8%] bg-[#1E293B]" />
                 <div className="absolute top-[46%] right-[28%] w-[8%] h-[8%] bg-[#1E293B]" />
