@@ -745,11 +745,11 @@ export class HabitatBuilder {
 
   private buildLightingAndExterior(): void {
     // Rich ambient fill light for deep atmospheric contrast
-    const hemiLight = new THREE.HemisphereLight(0x6b8494, 0x0d1a25, 0.34);
+    const hemiLight = new THREE.HemisphereLight(0x8ba4b2, 0x1a2732, 0.53);
     this.scene.add(hemiLight);
 
     // Direct lunar South Pole grazing sunlight (sharp shadows through observation window)
-    const sunLight = new THREE.DirectionalLight(0xffe9cf, 1.38);
+    const sunLight = new THREE.DirectionalLight(0xffe9cf, 1.52);
     sunLight.position.set(45, 18, -45);
     sunLight.castShadow = !this.isSoftwareGl;
     sunLight.shadow.mapSize.set(1024, 1024);
@@ -811,7 +811,7 @@ export class HabitatBuilder {
       roughness: 0.9,
       metalness: 0.08,
     });
-    const rockCount = 95;
+    const rockCount = 64;
     const rockInst = new THREE.InstancedMesh(rockGeo, rockMat, rockCount);
     const dummy = new THREE.Object3D();
     for (let i = 0; i < rockCount; i++) {
@@ -1292,6 +1292,15 @@ export class HabitatBuilder {
       west: true,
       windowNorthEast: true,
     });
+
+    // Independent low-energy safety wash remains legible during the story's emergency standby.
+    // Keep dramatic shadow contrast; avoid dark, unreadable corridors for children.
+    const standbyWash = new THREE.PointLight(0xffd7a8, 0.85, 11.5, 2);
+    standbyWash.position.set(-3.7, 3.35, 3.0);
+    this.scene.add(standbyWash);
+    const explorationWash = new THREE.PointLight(0x8eb8c5, 0.75, 12, 2);
+    explorationWash.position.set(3.3, 3.25, -3.25);
+    this.scene.add(explorationWash);
 
     // Overhead suspended octagonal luminaire chandelier fixture
     const chandelier = new THREE.Group();
