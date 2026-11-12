@@ -54,6 +54,8 @@ export default function App() {
     SaveManager.loadSettings()
   );
   const [focusedTarget, setFocusedTarget] = useState<InteractiveTarget | null>(null);
+  const [graphicsUnavailable, setGraphicsUnavailable] = useState(false);
+  const [graphicsDiagnostics, setGraphicsDiagnostics] = useState('');
   const [novaMessage, setNovaMessage] = useState<NovaMessage | null>(
     StoryDirector.getOpeningSequence()[0]
   );
@@ -323,25 +325,44 @@ export default function App() {
     let fallback2D: Canvas2DRenderer | null = null;
     let activeCanvas: HTMLCanvasElement;
 
-    try {
-      renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        powerPreference: 'high-performance',
-        alpha: false,
-        stencil: false,
-        depth: true,
-      });
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.0;
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    // A WebGL initialization failure must not silently masquerade as the real game.
+    // Retry with progressively more compatible settings before using the 2D diagnostic view.
+    let rendererError = '';
+    for (const options of [
+      { antialias: true, powerPreference: 'high-performance' as const },
+      { antialias: false, powerPreference: 'default' as const },
+      { antialias: false, powerPreference: 'low-power' as const },
+    ]) {
+      try {
+        const candidate = new THREE.WebGLRenderer({
+          ...options, alpha: false, stencil: false, depth: true,
+          failIfMajorPerformanceCaveat: false,
+        });
+        candidate.outputColorSpace = THREE.SRGBColorSpace;
+        candidate.toneMapping = THREE.ACESFilmicToneMapping;
+        candidate.toneMappingExposure = 1.0;
+        candidate.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        candidate.setSize(window.innerWidth, window.innerHeight);
+        candidate.shadowMap.enabled = true;
+        candidate.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer = candidate;
+        break;
+      } catch (error) {
+        rendererError = error instanceof Error ? error.message : String(error);
+      }
+    }
+    if (renderer) {
       activeCanvas = renderer.domElement;
-    } catch {
-      renderer = null;
+    } else {
       activeCanvas = document.createElement('canvas');
+      const support = (() => {
+        try {
+          const probe = document.createElement('canvas');
+          return probe.getContext('webgl2') ? 'WebGL2 detected; renderer failed' : probe.getContext('webgl') ? 'WebGL1 only' : 'WebGL unavailable';
+        } catch { return 'WebGL initialization blocked'; }
+      })();
+      setGraphicsDiagnostics([support, rendererError].filter(Boolean).join(' — '));
+      setGraphicsUnavailable(true);
     }
 
     const scene = new THREE.Scene();
@@ -530,6 +551,28 @@ export default function App() {
         ref={canvasMountRef}
         className="absolute inset-0 h-full w-full z-0"
       />
+
+      {graphicsUnavailable && (
+        <div role="alertdialog" aria-modal="true" aria-labelledby="graphics-warning-title" className="absolute inset-0 z-[100] flex items-center justify-center bg-[#060b13]/90 p-5 backdrop-blur-md">
+          <div className="w-full max-w-lg rounded-2xl border border-[#76AEC9]/40 bg-[#15232f] p-7 text-[#E7E9E6] shadow-2xl">
+            <div className="mb-3 text-xs font-semibold tracking-[0.2em] text-[#76AEC9]">MOONSHIFT · GRAPHICS CHECK</div>
+            <h2 id="graphics-warning-title" className="mb-3 text-2xl font-bold">Full 3D graphics couldn't start</h2>
+            <p className="mb-4 leading-relaxed text-[#ced5db]">
+              Your browser could not create a WebGL graphics context. The blue outlines behind this message are a simplified fallback, <strong>not the actual 3D game</strong>. No game progress has been lost.
+            </p>
+            <ol className="mb-5 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-[#ced5db]">
+              <li>Turn on <strong>graphics acceleration</strong> in your browser settings, then restart the browser.</li>
+              <li>Update your graphics driver and browser, or try another modern browser.</li>
+              <li>If you're using Remote Desktop, a virtual machine or a restricted device, enable WebGL/GPU support.</li>
+            </ol>
+            <div className="flex flex-wrap gap-3">
+              <button type="button" onClick={() => window.location.reload()} className="rounded-lg bg-[#76AEC9] px-5 py-3 font-semibold text-[#101820] hover:bg-[#a1d2e8]">Retry 3D</button>
+              <button type="button" onClick={() => { setGraphicsUnavailable(false); }} className="rounded-lg border border-[#76AEC9]/40 px-5 py-3 font-semibold text-[#E7E9E6] hover:bg-[#233746]">Continue in basic mode</button>
+            </div>
+            <p className="mt-5 break-words text-xs text-[#96a8b6]">Diagnostic: {graphicsDiagnostics || 'No WebGL context available'}</p>
+          </div>
+        </div>
+      )
 
       {showObservationModal && <ObservationModal onClose={() => setShowObservationModal(false)} />}
 
