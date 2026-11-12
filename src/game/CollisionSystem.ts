@@ -74,7 +74,20 @@ export class CollisionSystem {
     { id: 'ls_wall_w_b', minX: 11.8, maxX: 12.2, minZ: 1.8, maxZ: 6.7 },
     { id: 'ls_wall_east', minX: 22.8, maxX: 23.2, minZ: -6.7, maxZ: 6.7 },
     { id: 'ls_wall_north', minX: 12.0, maxX: 23.0, minZ: -6.7, maxZ: -6.3 },
-    { id: 'ls_wall_south', minX: 12.0, maxX: 23.0, minZ: 6.3, maxZ: 6.7 },
+    // The new south opening is 3.6m wide: x 15.7..19.3.
+    { id: 'ls_wall_south_west', minX: 11.8, maxX: 15.7, minZ: 6.3, maxZ: 6.7 },
+    { id: 'ls_wall_south_east', minX: 19.3, maxX: 23.2, minZ: 6.3, maxZ: 6.7 },
+    // Observational wing pressurized connector (x 15.6..19.4, z 6.5..12.0).
+    { id: 'astro_corr_w', minX: 15.4, maxX: 15.8, minZ: 6.5, maxZ: 12.0 },
+    { id: 'astro_corr_e', minX: 19.2, maxX: 19.6, minZ: 6.5, maxZ: 12.0 },
+    // Planetarium 11x11m room center (17.5,17.5), north doorway x15.7..19.3.
+    { id: 'astro_n_w', minX: 11.8, maxX: 15.7, minZ: 11.8, maxZ: 12.2 },
+    { id: 'astro_n_e', minX: 19.3, maxX: 23.2, minZ: 11.8, maxZ: 12.2 },
+    { id: 'astro_s', minX: 11.8, maxX: 23.2, minZ: 22.8, maxZ: 23.2 },
+    { id: 'astro_w', minX: 11.8, maxX: 12.2, minZ: 12.0, maxZ: 23.0 },
+    { id: 'astro_e', minX: 22.8, maxX: 23.2, minZ: 12.0, maxZ: 23.0 },
+    { id: 'astro_exhibit', minX: 15.12, maxX: 19.88, minZ: 15.82, maxZ: 20.58 },
+    { id: 'astro_console', minX: 20.0, maxX: 21.32, minZ: 16.0, maxZ: 17.15 },
 
     // ------------------------------------------------------------------------
     // SOUTH CORRIDOR (span x: [-1.9, 1.9], z: [7.0, 12.0])
@@ -238,6 +251,7 @@ export class CollisionSystem {
    * Detects which habitat sector the player currently occupies.
    */
   public detectRoom(x: number, z: number): RoomId {
+    if (x > 11 && z > 11.5) return 'planetarium';
     if (z < -10.5) return 'power';
     if (x > 10.5) return 'lifesupport';
     if (z > 10.5) return 'radiation';
