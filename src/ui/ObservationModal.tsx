@@ -7,7 +7,7 @@ import { soundFX } from '../audio/AudioManager';
  * remains approximately two degrees wide, rather than being made fantastically
  * large for visual impact. This viewer uses NASA Blue Marble ground imagery.
  */
-export const ObservationModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+export const ObservationModal: React.FC<{ onClose: () => void; onOpenPlanetarium?: () => void }> = ({ onClose, onOpenPlanetarium }) => {
   const mount = useRef<HTMLDivElement | null>(null);
   const [zoom, setZoom] = useState(1.25);
   const [autoRotate, setAutoRotate] = useState(true);
@@ -137,6 +137,10 @@ export const ObservationModal: React.FC<{ onClose: () => void }> = ({ onClose })
               <label htmlFor="observation-zoom" className="mb-2 flex justify-between text-xs text-[#b7c9d5]"><span>Telescope magnification</span><span>{zoom.toFixed(1)}×</span></label>
               <input id="observation-zoom" type="range" min="0.8" max="1.8" step="0.1" value={zoom} onChange={(e)=>setZoom(Number(e.target.value))} className="w-full accent-[#87c3d9]" />
             </div>
+            {onOpenPlanetarium && <button type="button" onClick={onOpenPlanetarium}
+              className="mt-4 w-full rounded-xl border border-[#9dc9dd]/45 bg-[#1b4054] px-4 py-3 text-left text-sm font-semibold text-[#d7eef4] hover:bg-[#2c586e]">
+              ✦ Explore our Solar System · 8 planets, gravity & light ↗
+            </button>}
             <button type="button" onClick={()=>setAutoRotate(!autoRotate)} className="mt-4 text-sm text-[#8dc8e1] hover:text-white">{autoRotate ? 'Pause rotation' : 'Resume rotation'} · Drag the planet to explore</button>
             <div className="mt-6 rounded-xl border border-[#8abdd0]/25 bg-[#1c3445]/50 p-4">
               <div className="text-[10px] font-bold uppercase tracking-widest text-[#98cbd9]">TRY A SCIENCE EXPERIMENT</div>
