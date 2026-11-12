@@ -128,6 +128,8 @@ export class StoryDirector {
     }
 
     switch (room) {
+      case 'planetarium':
+        return { id:'enter-planetarium', speaker:'NOVA', text:'Welcome to our Planetary Observatory! Compare the planets, try the gravity drop lab, and see how long sunlight travels through space.', subtext:'Explore the orbital model and press E at the Planet Explorer console.', priority:'normal' };
       case 'power':
         if (!state.power.completed) {
           return {
