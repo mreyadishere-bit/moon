@@ -6,7 +6,7 @@ import { ChallengeOverlay } from './challenges/ChallengeOverlay';
 import { EmergencyRepair } from './challenges/EmergencyRepair';
 import { RescueTasks } from './challenges/RescueTasks';
 import { AdventureAcademy } from './ui/AdventureAcademy';
-import { AdventureState, resetAdventure } from './game/ScienceAdventure';
+import { AdventureState, readAdventure, resetAdventure } from './game/ScienceAdventure';
 import { CollisionSystem } from './game/CollisionSystem';
 import { InteractionSystem } from './game/InteractionSystem';
 import {
@@ -173,6 +173,29 @@ export default function App() {
           t.characterId,
           stateRef.current.currentChapter
         );
+        // Real branching consequence: the crew remembers what the player did in
+        // the Science Academy rather than repeating a disconnected NPC script.
+        const training = readAdventure();
+        const powerChoice = training.choices.find(c => c.stage === 2)?.id;
+        const greenhouseChoice = training.choices.find(c => c.stage === 4)?.id;
+        const stormChoice = training.choices.find(c => c.stage === 5)?.id;
+        if (t.characterId === 'leo' && powerChoice) {
+          dialogue.lines.push(powerChoice === 'breathe'
+            ? 'I saw you choose the air machines first. Good thinking about the crew — but watch our battery too!'
+            : powerChoice === 'grow'
+              ? 'You gave the plants extra light! That helps our garden, but now let’s check how much electricity we have left.'
+              : 'I noticed you saved some battery power earlier. Having a backup is a smart engineering choice.');
+        }
+        if (t.characterId === 'sprout' && greenhouseChoice) {
+          dialogue.lines.push(greenhouseChoice === 'recycle'
+            ? 'You fixed the water-recycling plan! Less waste means more water for our little green friends.'
+            : 'Our lights are shining brightly thanks to you! Just remember that grow lights need electricity.');
+        }
+        if (t.characterId === 'maya' && stormChoice) {
+          dialogue.lines.push(stormChoice === 'shelter'
+            ? 'Thank you for preparing the shelter. When conditions might be dangerous, crew safety comes first.'
+            : 'You checked the instruments. That helps us understand an alert, but monitoring is not a substitute for shelter preparedness.');
+        }
         setActiveDialogue(dialogue);
         pixRef.current?.say(`Talking to ${dialogue.speaker}!`, 3);
         return;
