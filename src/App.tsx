@@ -4,6 +4,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { soundFX } from './audio/AudioManager';
 import { ChallengeOverlay } from './challenges/ChallengeOverlay';
 import { EmergencyRepair } from './challenges/EmergencyRepair';
+import { RescueTasks } from './challenges/RescueTasks';
 import { AdventureAcademy } from './ui/AdventureAcademy';
 import { AdventureState, resetAdventure } from './game/ScienceAdventure';
 import { CollisionSystem } from './game/CollisionSystem';
@@ -562,6 +563,8 @@ export default function App() {
     });
   };
 
+  const ActiveRepairView = activeRepair === 'power' || activeRepair === 'master_console' ? EmergencyRepair : RescueTasks;
+
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-[#101820] select-none">
       {/* Dedicated Canvas Container */}
@@ -687,9 +690,9 @@ export default function App() {
         />
       )}
 
-      {/* Physical repair puzzle: learn through play before system-level decisions. */}
+      {/* Each system uses a distinct original, child-friendly physical repair task. */}
       {activeRepair && (
-        <EmergencyRepair
+        <ActiveRepairView
           challengeId={activeRepair}
           onClose={() => setActiveRepair(null)}
           onComplete={() => {
