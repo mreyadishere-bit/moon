@@ -8,7 +8,7 @@ Last updated: 2026-11-12
 - Replaced inaccurate cartoon-style Earth texture with NASA Blue Marble ground imagery.
 - Corrected Earth diameter-to-distance scale to approximately its real apparent size from the Moon (~2°).
 - Made north-facing hub viewing glazing actually visible by constructing glass into the same branch as the northern door. Previously the requested window was occluded by the solid wall branch.
-- Added interactive magnified Earth telescope with orbit, drag rotation, zoom control, and accessible explanatory facts.
+- Added interactive magnified Earth telescope with orbit, drag rotation, zoom control, an illustrative 2.6-second Earth–Moon round-trip communication experiment, and accessible explanatory facts.
 - Generated a repeatable high-frequency lunar regolith texture; removed unnecessary hazard stripes from the regular walking surface.
 - Rewrote the opening screen as a character-friendly lunar adventure rather than dense engineering terminology.
 - Simplified chapter objectives and added accessible science coaching to the five major challenge overlays.
