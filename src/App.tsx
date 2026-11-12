@@ -484,7 +484,9 @@ export default function App() {
           setFocusedTarget(target);
         }
 
-        SimulationEngine.step(currentState, dt);
+        // Learning, dialogue and repair overlays pause mission time and resource drain.
+        // Children must not lose the habitat merely because they are reading instructions.
+        if (!activeModalRef.current) SimulationEngine.step(currentState, dt);
         uiSyncAccumulator += dt;
         if (uiSyncAccumulator >= 0.1) {
           uiSyncAccumulator = 0;
