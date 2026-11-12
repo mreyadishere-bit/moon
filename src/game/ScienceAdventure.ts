@@ -25,7 +25,7 @@ export function freeFallMeters(timeSeconds: number, onMoon: boolean): number {
 export function oneWayMoonSignalSeconds(): number {
   return NASA_OBSERVATIONS.earthMoonDistanceKm.value / 299792.458;
 }
-/** NASA irradiance with explicitly fictional panel assumptions. kW is energy output per hour. */
+/** NASA irradiance with explicitly fictional panel assumptions. Result is kW (power). */
 export function exampleSolarPowerKw(sunlightPct: number): number {
   const areaM2 = 8; // fictional colony: 8 square meter teaching array
   const efficiency = 0.20; // simplifying hypothetical efficiency
@@ -92,6 +92,7 @@ export function trainWithDecision(previous: AdventureState,id:ChoiceId|string,la
       if(id==='weather'){next.safety=28;consequence='A space-weather preparedness drill begins.';}
       break;
     case 1:
+      if(id!=='gravity')return previous;
       consequence='You compared the same fall time on the Moon and on Earth using NASA gravity data.';
       break;
     case 2: {
