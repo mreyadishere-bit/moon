@@ -91,6 +91,26 @@ export const PlanetariumModal:React.FC<{onClose:()=>void;onAskScientist:()=>void
  const [mode,setMode]=useState<'explore'|'gravity'|'distance'>('explore');
  const [seconds,setSeconds]=useState(1);
  const [compare,setCompare]=useState<PlanetId>('mars');
+ const [prediction,setPrediction]=useState<PlanetId|null>(null);
+ const [dropProgress,setDropProgress]=useState(0);
+ const [dropDone,setDropDone]=useState(false);
+ const [dropRunning,setDropRunning]=useState(false);
+ const dropFrame=useRef(0);
+ useEffect(()=>()=>cancelAnimationFrame(dropFrame.current),[]);
+ const launchDrop=()=>{
+  if(dropRunning)return;
+  setDropRunning(true);setDropProgress(0);setDropDone(false);
+  const launched=performance.now();
+  const animate=(now:number)=>{
+   const t=Math.max(0,Math.min(1,(now-launched)/1750));
+   // Ideal free fall: distance is proportional to elapsed time squared.
+   setDropProgress(t*t);
+   if(t<1)dropFrame.current=requestAnimationFrame(animate);
+   else{setDropRunning(false);setDropDone(true);}
+  };
+  cancelAnimationFrame(dropFrame.current);
+  dropFrame.current=requestAnimationFrame(animate);
+ };
  const selected=getPlanet(selection),other=getPlanet(compare);
  return <div className="fixed inset-0 z-[66] overflow-y-auto bg-[#060e18]/97 text-[#e4eef4] backdrop-blur-xl" role="dialog" aria-modal="true" aria-label="Interactive solar-system planetarium">
   <div className="mx-auto flex min-h-screen max-w-[1450px] flex-col px-3 py-3 sm:px-7 sm:py-5">
@@ -141,6 +161,41 @@ export const PlanetariumModal:React.FC<{onClose:()=>void;onAskScientist:()=>void
       <label className="mt-4 block text-xs text-[#c0d2df]">Time: {seconds.toFixed(1)} seconds
        <input type="range" min=".5" max="2" step=".1" value={seconds} onChange={e=>setSeconds(Number(e.target.value))} className="mt-2 w-full accent-[#91cddd]"/>
       </label>
+      <div className="mt-4 rounded-xl border border-[#678fa5]/35 bg-[#0e2231] p-3">
+       <p className="text-[11px] font-semibold text-[#dbecf1]">1. Make a prediction: which ball will fall farther?</p>
+       <div className="mt-2 flex gap-2">
+        {[selected,other].map((p,i)=><button type="button" key={i} disabled={dropRunning}
+          onClick={()=>{setPrediction(p.id);setDropDone(false);setDropProgress(0)}}
+          aria-pressed={prediction===p.id}
+          className={'flex-1 rounded-lg border px-2 py-2 text-xs '+(prediction===p.id?'border-[#e3bb7e] bg-[#5b493d] text-white':'border-[#66859a]/45 text-[#c2d8e2] hover:bg-[#1e4053]')}>
+           {p.name}
+          </button>)}
+       </div>
+       <div className="mt-3 grid grid-cols-2 gap-3">
+        {[selected,other].map((p,i)=>{
+         const maxDist=Math.max(idealDropDistance(selected.gravityMs2,seconds),idealDropDistance(other.gravityMs2,seconds),1);
+         const fall=idealDropDistance(p.gravityMs2,seconds)/maxDist*dropProgress;
+         return <div key={i} className="text-center">
+           <div className="relative h-28 overflow-hidden rounded-lg border border-[#66889b]/35 bg-[linear-gradient(180deg,#183548,#122635)]">
+            <div className="absolute left-1/2 top-2 h-3 w-3 -translate-x-1/2 rounded-full bg-[#e5c18d] shadow-[0_0_15px_#f0c896]"
+             style={{transform:'translate(-50%, '+(fall*86)+'px)'}}/>
+            <div className="absolute bottom-1 left-2 right-2 border-t border-dashed border-[#8ca9b4]/40"/>
+           </div>
+           <span className="mt-1 block text-[11px] text-[#bbd0dd]">{p.name}</span>
+         </div>
+        })}
+       </div>
+       <button type="button" onClick={launchDrop} disabled={dropRunning} className="mt-3 w-full rounded-lg bg-[#d8b98b] px-3 py-2.5 text-xs font-bold text-[#172c39] hover:bg-[#ecd0a2] disabled:opacity-60">
+        {dropRunning?'Dropping…':dropDone?'Try another drop ↻':'2. Drop both balls!'}
+       </button>
+       {dropDone&&<p role="status" className="mt-2 text-xs leading-5 text-[#c5e6d1]">
+        {selected.gravityMs2===other.gravityMs2?'Both balls fall the same distance in this model.':
+          (prediction === (selected.gravityMs2>other.gravityMs2?selected.id:other.id)
+            ? 'Great prediction! ' : 'Nice experiment! Now you know: ')+
+          (selected.gravityMs2>other.gravityMs2?selected.name:other.name)+' has stronger gravity here.'}
+        {' '}Try choosing a different planet to investigate.
+       </p>}
+      </div>
       {[selected,other].map((p,i)=><div key={i} className="mt-3 rounded-xl bg-[#0e2231] p-3">
        <div className="flex justify-between text-xs text-[#b6d0da]"><span>{p.name}</span><span>{p.gravityMs2.toFixed(2)} m/s²</span></div>
        <div className="mt-2 h-3 overflow-hidden rounded-full bg-[#304655]"><div className="h-full rounded-full bg-[#caa87e]" style={{width:Math.min(100,p.gravityMs2/25*100)+'%'}}/></div>
