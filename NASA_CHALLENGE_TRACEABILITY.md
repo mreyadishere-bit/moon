@@ -1,57 +1,34 @@
-# MOONSHIFT: THE LOST SIGNAL
-## NASA Space Apps Challenge 2026 — Junior Astronaut Mission Trainer
-### Requirements Traceability & Educational Verification Matrix
+# MOONSHIFT — NASA Space Apps 2026 challenge coverage
 
----
+**Target challenge:** [Build a Junior Astronaut Mission Trainer](https://www.spaceappschallenge.org/2026/challenges/junior-astronaut-mission-trainer/).  **Intended audience:** ages 7–12.
 
-## 1. Challenge Overview & Mission Statement
+This is an **honest development matrix**, not a competition certification. A passing TypeScript/Vite build proves the source compiles; it does **not** establish that the game has been played all the way through, that children understand it, or that all science calculations are validated.
 
-- **Challenge:** Junior Astronaut Mission Trainer (NASA Space Apps Challenge 2026)
-- **Target Audience:** Children aged 7–12, educators, families, and mission judges
-- **Core Educational Objective:** Enable young learners to understand real space exploration engineering trade-offs through an engaging, story-driven, first-person 3D adventure where every decision visibly and audibly transforms the living lunar outpost.
+| Challenge area | Existing implementation / recent improvement | Verification and remaining work |
+| --- | --- | --- |
+| Life support | Life-support station, shared mission resources and interaction challenge | Source exists. Need hands-on playthrough, child-first teaching, and review of model assumptions and units. |
+| Radiation protection | Shelter area and protection challenge | Source exists. Needs assessment of scientific assumptions, uncertainty, clarity for young learners and complete gameplay verification. |
+| Power budgeting | Power-system challenge and mission-energy decisions | Source exists. Need verify visible trade-offs in each branch and that decisions can't create resources. |
+| Food production | Greenhouse scene and water/light challenge | Source exists. Need distinguish accelerated plant growth from real-time biological processes and validate simplifications. |
+| Communication delay | New Earth telescope with illustrated ~2.6-second Earth–Moon light-speed round-trip experiment | Implemented and TypeScript/build checked. **Not independently tested in a browser.** Scenario-specific signal outage is not equivalent to light propagation delay. |
+| Integrated trade-offs | Existing simulation-engine and mission-state classes | Requires systematic unit tests for conservation, state boundaries, retries and endings. |
+| Adventure/story | PIX companion, station characters, chapter objectives, guidebook, updated opening story | Working source carried over from uploaded prototype. No verified complete beginning-to-end 7–12-year-old playtest. |
+| Scientific credibility | NASA source links, source ledger, credited NASA Blue Marble image and physically plausible apparent Earth size | Image credit and astronomy corrections implemented. **Game resource values remain educational approximations, not NASA telemetry or safety guidance.** Source-by-source expert review still required. |
+| Presentation | Three.js 3D station, new glazed hub observation bays, lunar surface material, redesigned main menu and telescope | Compile/build passed on GitHub Actions. Final art direction, authored character animation, cinematics, accessibility and device-performance testing remain in progress. |
+| Deliverable and reproducibility | Public GitHub repository with documented run and CI commands | GitHub Actions confirms install, type check and production build. A live public playable deployment and full interaction test are not yet verified. |
 
----
+## Current verified evidence
 
-## 2. Requirements Traceability Matrix
+- GitHub Actions on the current main branch runs `npm install`, `npm run lint` (`tsc --noEmit`), and `npm run build` successfully.
+- Player/collision and narrative source code inspected, but a scripted desktop-and-mobile full game journey was not run in this work session. Local Chromium access to the local preview was blocked by the execution environment.
+- The NASA Earth imagery is an existing NASA Blue Marble basemap and the proposed message experiment is **simulated**. Source notes: `SCIENCE_AND_ASSET_CREDITS.md`.
 
-| # | Challenge Objective | In-Game System / Mechanic | Scientific Basis & Provenance | Verification Status |
-|---|---|---|---|---|
-| **1** | **Life-Support Decisions** | Sector 02 ECLSS Lab, Zeolite 5A molecular sieve bed thermal purge, Sabatier CO₂ reduction reactor, emergency airflow circulation damper. | NASA ECLSS Engineering Standards (NASA-SP-2005-3105). Human metabolic O₂ consumption (~0.84 kg/day), CO₂ scrubbing thresholds (< 0.5% cabin partial pressure). | **Implemented & Verified** |
-| **2** | **Radiation Protection** | Sector 03 Radiation Shelter, 3-layer Graded-Z shielding configuration (Lunar regolith, water bladders, boronated HDPE), external hydraulic storm shutter. | NASA SP-2015-3001 Space Flight Human-System Standard. Passive hydrogenous shielding effective against secondary neutron radiation from Galactic Cosmic Rays (GCR) and Solar Particle Events (SPE). | **Implemented & Verified** |
-| **3** | **Power Allocation** | Sector 01 Power Core, high-voltage DC microgrid routing, 88° solar array gimbal tracking for South Pole Shackleton rim, electrostatic regolith dust repulsion switch. | NASA Artemis Lunar Surface Power studies. Shackleton crater rim receives persistent grazing sunlight; electrodynamic dust shields (EDS) repel insulating lunar regolith. | **Implemented & Verified** |
-| **4** | **Food Production** | Sector 04 Hydroponics & Aeroponics, dual-spectrum PAR grow lamps (660nm red / 450nm blue), transpiration condensate recovery manifold. | NASA Veggie & Advanced Plant Habitat (APH) research on ISS. Plants transpire up to 98% of absorbed water, which must be captured to close the environmental loop. | **Implemented & Verified** |
-| **5** | **Communication Delay & Autonomy** | Chapter 5 & 6 storyline; realistic Earth–Moon roundtrip radio latency (2.56 seconds) vs. solar storm CME coronal blackout requiring local astronaut autonomy. | Speed of light $c \approx 300,000\text{ km/s}$; mean lunar distance $\approx 384,400\text{ km}$. Teaches why astronauts must make critical survival choices on-site. | **Implemented & Verified** |
-| **6** | **Resource Limitations** | Deterministic 3-resource telemetry (Power, Air, Safety) backed by physical storage equations (kWh, kPa, mSv/hr). | Law of Conservation of Energy and Mass. Battery storage cannot supply maximum HVAC and maximum PAR lighting simultaneously without net depletion. | **Implemented & Verified** |
-| **7** | **Interconnected Consequences ("Living Colony")** | Allocating kW to grow lights accelerates crop transpiration but depletes reserves; shutting the storm shutter drops radiation exposure but dims natural illumination; starting fans increases air circulation but raises acoustic and electrical load. | Multi-subsystem closed-loop life support architecture. The 3D world reflects every decision dynamically. | **Implemented & Verified** |
-| **8** | **Mission Success & Failure** | Post-storm debrief with specific diagnostic feedback ("What happened? Why did it happen? What could we try next time?") and instant non-punitive retry. | Modern child-centered learning science (constructivist problem-solving without punitive game-over walls). | **Implemented & Verified** |
-| **9** | **NASA Science & Data Integration** | In-game NASA Science modal and Guidebook with documented formulas, conversion units, and links to NASA DONKI, NASA Artemis, and NASA Life Support standards. | NASA DONKI Space Weather Database, NASA Artemis Base Camp Architecture, NASA Open Science Data Repository. | **Implemented & Verified** |
-| **10** | **Scientific Reasoning Through Play** | 3D interactive tactile challenges: physical switches, valve handwheels, slider circuits, companion robot explanations from PIX, and dialogue with Dr. Maya Chen, Leo, and SPROUT. | Discovery learning pedagogy for ages 7–12: concepts are demonstrated visually and physically before player action is evaluated. | **Implemented & Verified** |
+## Next release gates
 
----
+1. End-to-end testing through the hub and every door, lesson, puzzle and ending, on real desktop and mobile browsers.
+2. Child-friendly **teach → try → choose → consequence** progression for every required topic, followed by playtesting with ages 7–12 and suitably approved adults.
+3. Written, checkable derivations / NASA citations for every meaningful numerical model and appropriate disclaimers.
+4. Cinematic art direction across **all** rooms, quality 3D animations, short authored scenes and accessible spoken/subtitled dialogue as supported by licenses and runtime performance.
+5. Verified production deployment, judge-friendly demonstration, documented external assets, and event-organizer confirmation about use of work made before the hackathon.
 
-## 3. Character Roles in Educational Delivery
-
-1. **PIX (Companion Robot):**
-   - Floating autonomous helper with expressive animated LED eyes and antenna light.
-   - Translates complex concepts into child-friendly analogies ("Batteries are like a giant space power bank!").
-   - Follows player, reacts to room changes, and celebrates successes.
-
-2. **Dr. Maya Chen (Chief Scientist):**
-   - Teaches the physics of lunar environment (vacuum, lack of atmosphere, temperature swings) and why human bodies require radiation shielding.
-
-3. **Leo (Chief Outpost Engineer):**
-   - Teaches the engineering trade-offs of power distribution, battery cycling, and solar panel orientation.
-
-4. **SPROUT (Gardening Bot):**
-   - Teaches plant photosynthesis, water recycling via transpiration loops, and supplemental food production.
-
-5. **NOVA (Station Computer):**
-   - Delivers concise, calm mission-status telemetry and guidance.
-
----
-
-## 4. Architectural Verification
-
-- **Collision & Physics:** Rewritten solid-body AABB collision system with 3.6m wide doorway clearances, substep integration, and automatic door-collider removal.
-- **Rendering & Performance:** Three.js 0.187 WebGL with PCFSoftShadowMap, ACESFilmicToneMapping, and procedural PBR materials running at 60 FPS. Automatic Canvas2DRenderer projection fallback for headless / software-only environments.
-- **Accessibility:** Large readable typography (Plus Jakarta Sans & Chakra Petch), high contrast indicators, color-independent icon badges, adjustable mouse sensitivity, volume controls, and complete keyboard navigation ([WASD], [E], [J], [M], [H], [Esc]).
+**NASA Space Apps recognition or a global award cannot be guaranteed.** This project is independent and is not endorsed by NASA.
