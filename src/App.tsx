@@ -572,7 +572,7 @@ export default function App() {
             <p className="mt-5 break-words text-xs text-[#96a8b6]">Diagnostic: {graphicsDiagnostics || 'No WebGL context available'}</p>
           </div>
         </div>
-      )
+      )}
 
       {showObservationModal && <ObservationModal onClose={() => setShowObservationModal(false)} />}
 
