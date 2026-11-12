@@ -41,7 +41,7 @@ npm run preview
 - A connected 3D lunar habitat with four mission wings, NPC characters, PIX the guide robot, story messages, context-sensitive interactables, and a local save system.
 - Resource trade-off challenges around energy, air, greenhouse water, and sheltering.
 - Two new glazed observation bays in the hub: one oriented toward the sculpted lunar landscape, the other toward a deliberately correctly scaled distant Earth.
-- Earth observation telescope (look toward the telescope by the north viewing bench, press **E**) with an interactive, magnified NASA Blue Marble globe and educational facts.
+- Earth observation telescope (look toward the telescope by the north viewing bench, press **E**) with an interactive, magnified NASA Blue Marble globe, an Earth–Moon message-delay experiment, and educational facts.
 - Updated landing-page art direction, reduced repetitive caution-tape floor pattern, new regolith material, more accessible mission wording and tutorial-like puzzle coaching.
 
 ## Scientific accuracy
