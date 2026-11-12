@@ -53,7 +53,7 @@ try{
   await academy();
   await page.getByText('Why is everything so floaty?',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Earth',exact:true}).evaluate(el=>el.click());
-  await page.getByRole('button',{name:/I tested both worlds/i}).click();
+  await pick('I tested both worlds');
   await academy();
   await page.getByText('A little sunlight goes a long way',{exact:true}).waitFor();
   await page.locator('input[type=range]').first().evaluate(el=>{el.focus();el.dispatchEvent(new KeyboardEvent('keydown',{bubbles:true,key:'ArrowRight'}));el.stepUp();el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});
