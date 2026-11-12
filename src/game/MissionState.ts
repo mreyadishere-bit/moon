@@ -1,6 +1,6 @@
 import { ShieldingLayerOption } from '../science/formulas';
 
-export type RoomId = 'hub' | 'power' | 'lifesupport' | 'radiation' | 'greenhouse';
+export type RoomId = 'hub' | 'power' | 'lifesupport' | 'radiation' | 'greenhouse' | 'planetarium';
 
 export type ChallengeId = 'power' | 'lifesupport' | 'radiation' | 'greenhouse' | 'master_console';
 
