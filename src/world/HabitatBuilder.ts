@@ -3,6 +3,7 @@ import { TrainingWallExhibit } from './TrainingWallExhibit';
 import { LunarWonderArchitecture } from './LunarWonderArchitecture';
 import { PremiumBulkheads } from './PremiumBulkheads';
 import { HubDressing } from './HubDressing';
+import { PlanetariumWing } from './PlanetariumWing';
 import { GuidePoint, createStationGuidePath, currentMissionGuideDestination } from '../game/GuidePath';
 import { soundFX } from '../audio/AudioManager';
 import { StationCrew } from '../characters/StationCrew';
@@ -12,7 +13,7 @@ export interface InteractiveTarget {
   id: string;
   title: string;
   subtitle: string;
-  actionType: 'open_challenge' | 'physical_toggle' | 'dialogue' | 'observation' | 'academy';
+  actionType: 'open_challenge' | 'physical_toggle' | 'dialogue' | 'observation' | 'academy' | 'planetarium';
   challengeId?: ChallengeId;
   characterId?: 'maya' | 'leo' | 'sprout';
   position: THREE.Vector3;
@@ -51,6 +52,7 @@ export class HabitatBuilder {
   private radiationBeaconRotator!: THREE.Group;
   private greenhouseLight!: THREE.PointLight;
   private hubStatusLight!: THREE.PointLight;
+  private planetariumWing?: PlanetariumWing;
   private stormShutterMesh!: THREE.Mesh;
   private shieldLayerMeshes: THREE.Mesh[] = [];
   private dustBreakerLever!: THREE.Mesh;
@@ -117,6 +119,7 @@ export class HabitatBuilder {
     this.buildCorridorsAndDoors();
     this.buildPowerRoom();
     this.buildLifeSupportRoom();
+    this.buildPlanetariumExtension();
     this.buildRadiationRoom();
     this.buildGreenhouseRoom();
     // Deliberately replace oversized cabinets/voxel furniture which crossed
@@ -141,6 +144,20 @@ export class HabitatBuilder {
     // Crew Characters
     this.crew = new StationCrew(scene);
     this.registerCrewInteractives();
+  }
+
+  private buildPlanetariumExtension(): void {
+    // Actual additional walkable wing, not a teleport-only or screenshot space.
+    // Connect Life Support's south opening (z=6.5) to the new observatory (z=12.0).
+    this.buildRoomShell(17.5, 9.5, 3.8, 6.0, 3.65, {north:true,south:true});
+    this.buildRoomShell(17.5, 17.5, 11, 11, 4.4, {north:true});
+    this.planetariumWing = new PlanetariumWing(this.scene);
+    this.interactives.push({
+      id:'planetarium_console',title:'Solar System Explorer',
+      subtitle:'Explore planets, gravity and radio signals [E]',
+      actionType:'planetarium',position:new THREE.Vector3(20.65,1.55,16.5),
+      mesh:this.planetariumWing.console,
+    });
   }
 
   private buildScienceAcademyKiosk(): void {
@@ -1817,7 +1834,7 @@ export class HabitatBuilder {
   /* -------------------------------------------------------------------------- */
 
   private buildLifeSupportRoom(): void {
-    this.buildRoomShell(17.5, 0, 11, 13, 4.2, { west: true });
+    this.buildRoomShell(17.5, 0, 11, 13, 4.2, { west: true, south: true });
 
     this.lifeSupportLight = new THREE.PointLight(0x76aec9, 3.2, 20, 1.2);
     this.lifeSupportLight.position.set(17.5, 3.6, 0);
@@ -2449,6 +2466,7 @@ export class HabitatBuilder {
     state: MissionStateData
   ): void {
     const dt = Math.min(deltaSeconds, 0.1);
+    this.planetariumWing?.update(dt);
 
     // 1. Rotate Central Hub Hologram & Orbiters
     this.holoCoreGroup.rotation.y += dt * 0.45;
