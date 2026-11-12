@@ -449,6 +449,10 @@ export default function App() {
       if (softwareRendering) {
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 0.85));
         renderer.setSize(window.innerWidth, window.innerHeight);
+        // Without GPU environment-map reflections, low-spec software WebGL
+        // otherwise becomes nearly black after cinematic exposure tuning.
+        // This fill is intentionally NEVER applied to accelerated WebGL.
+        scene.add(new THREE.AmbientLight(0xb6c8d5, 0.70));
       } else {
         const pmremGenerator = new THREE.PMREMGenerator(renderer);
         scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
