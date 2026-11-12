@@ -108,7 +108,7 @@ export const AdventureAcademy:React.FC<Props>=({onClose,onDecision,onExplore})=>
             <div className="space-y-4 p-5 sm:p-7">
               <div className="flex items-start gap-3 rounded-2xl border border-[#80b7d8]/20 bg-[#183344] p-4">
                 <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#31536a] text-xl">{screen.speaker==='PIX'?'◈':screen.speaker==='LEO'?'⚡':screen.speaker==='SPROUT'?'✿':screen.speaker==='MAYA'?'☾':'◎'}</div>
-                <div><span className="text-[10px] font-bold uppercase tracking-[.2em] text-[#91c7e2]">{screen.speaker}</span><p className="mt-1 text-sm leading-6 text-[#e7f1f5] sm:text-base">{stage===0?narration[state.branch]:screen.intro}</p></div>
+                <div><span className="text-[10px] font-bold uppercase tracking-[.2em] text-[#91c7e2]">{screen.speaker}</span><p className="mt-1 text-sm leading-6 text-[#e7f1f5] sm:text-base">{stage===0?screen.intro:(stage===2?narration[state.branch]+' '+screen.intro:screen.intro)}</p></div>
               </div>
               {lastConsequence&&stage!==7&&<div className="rounded-xl border border-[#8ecaac]/25 bg-[#1a4239]/50 p-3 text-sm text-[#c5f1d8]" role="status">Last decision: {lastConsequence}</div>}
               <p className="text-sm leading-6 text-[#c4d6e0]">{screen.lesson}</p>
