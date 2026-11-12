@@ -1,0 +1,44 @@
+name: MOONSHIFT browser playtest
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  playable-journey:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install production and test dependencies
+        run: npm install
+      - name: Audit NASA reference data
+        run: npm run audit:nasa
+      - name: Check types and deterministic tests
+        run: npm run lint && npm test
+      - name: Check Vite build
+        run: npm run build
+      - name: Add isolated browser test tooling
+        run: npm install --no-save playwright@1.56.1
+      - name: Install Chromium for real rendering
+        run: npx playwright install --with-deps chromium
+      - name: Start site and play entire science storyline
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/moonshift-preview.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/browserSmoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: moonshift-browser-screenshots
+          path: browser-test-artifacts/
+          retention-days: 3
