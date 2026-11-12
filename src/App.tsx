@@ -7,6 +7,7 @@ import { EmergencyRepair } from './challenges/EmergencyRepair';
 import { RescueTasks } from './challenges/RescueTasks';
 import { KidFriendlyConsole } from './challenges/KidFriendlyConsole';
 import { AdventureAcademy } from './ui/AdventureAcademy';
+import { ArrivalCinematic } from './ui/ArrivalCinematic';
 import { AdventureState, readAdventure, resetAdventure } from './game/ScienceAdventure';
 import { CollisionSystem } from './game/CollisionSystem';
 import { InteractionSystem } from './game/InteractionSystem';
@@ -50,6 +51,9 @@ export default function App() {
   const [activeRepair, setActiveRepair] = useState<ChallengeId | null>(null);
   const [advancedConsole, setAdvancedConsole] = useState(false);
   const [showAcademy, setShowAcademy] = useState(false);
+  const [introCinematic, setIntroCinematic] = useState(false);
+  const [cinematicElapsed, setCinematicElapsed] = useState(0);
+  const introRef = useRef({active:false,elapsed:0});
   const [showScienceModal, setShowScienceModal] = useState<boolean>(false);
   const [showObservationModal, setShowObservationModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
@@ -81,6 +85,7 @@ export default function App() {
     Boolean(activeChallenge) ||
     Boolean(activeRepair) ||
     showAcademy ||
+    introCinematic ||
     Boolean(activeDialogue) ||
     showObservationModal ||
     showScienceModal ||
@@ -106,7 +111,7 @@ export default function App() {
     if (playerRef.current) {
       playerRef.current.setEnabled(!activeModalRef.current);
     }
-  }, [inMenu, activeChallenge, activeRepair, showAcademy, activeDialogue, showObservationModal, showScienceModal, showSettingsModal, showGuidebookModal, missionState.stormEvaluated]);
+  }, [inMenu, activeChallenge, activeRepair, showAcademy, introCinematic, activeDialogue, showObservationModal, showScienceModal, showSettingsModal, showGuidebookModal, missionState.stormEvaluated]);
 
   const updateMissionState = useCallback(
     (
@@ -300,7 +305,10 @@ export default function App() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Escape') {
-        if (showAcademy) {
+        if (introCinematic) {
+          introRef.current.active=false;
+          setIntroCinematic(false);
+        } else if (showAcademy) {
           setShowAcademy(false);
         } else if (activeRepair) {
           setActiveRepair(null);
@@ -344,6 +352,7 @@ export default function App() {
     activeChallenge,
     activeRepair,
     showAcademy,
+    introCinematic,
     activeDialogue,
     showObservationModal,
     showScienceModal,
@@ -500,6 +509,20 @@ export default function App() {
       }
 
       if (renderer && habitat) {
+        // A real in-engine shot of the SAME 3D world, not a fake pre-rendered splash.
+        // Camera glides from a wide view of the habitat to the player's start position.
+        if (introRef.current.active && !inMenuRef.current) {
+          const elapsedIntro=introRef.current.elapsed=Math.min(10.2,introRef.current.elapsed+dt);
+          const p=THREE.MathUtils.smoothstep(elapsedIntro/10.2,0,1);
+          camera.position.set(THREE.MathUtils.lerp(4.5,0,p),THREE.MathUtils.lerp(2.65,1.7,p),THREE.MathUtils.lerp(5.1,3.6,p));
+          camera.lookAt(0,1.45,-0.4);
+          if(Math.round(elapsedIntro*10)%3===0) setCinematicElapsed(elapsedIntro);
+          if(elapsedIntro>=10.2){
+            introRef.current.active=false;
+            setIntroCinematic(false);
+            setNovaMessage({id:'pix-first-steps',speaker:'PIX',text:'I’m PIX! First, explore our station. Try the glowing table, or open the Science Academy on the wall to learn how everything works.',priority:'info'});
+          }
+        }
         habitat.update(dt, player.position, currentState);
         // Synchronize animated door opening factors to physical collision system
         habitat.doors.forEach((door, idx) => {
@@ -562,7 +585,10 @@ export default function App() {
     setActiveRepair(null);
     setAdvancedConsole(false);
     resetAdventure();
-    setShowAcademy(true);
+    setShowAcademy(false);
+    introRef.current={active:true,elapsed:0};
+    setCinematicElapsed(0);
+    setIntroCinematic(true);
     setShowObservationModal(false);
     setNovaMessage(StoryDirector.getOpeningSequence()[0]);
     playerRef.current?.teleportToRoom('hub');
@@ -570,6 +596,8 @@ export default function App() {
   };
 
   const handleContinueMission = () => {
+    introRef.current.active=false;
+    setIntroCinematic(false);
     const saved = SaveManager.loadMission();
     if (saved) {
       saved.started = true;
@@ -682,8 +710,12 @@ export default function App() {
         />
       )}
 
+      {introCinematic && !inMenu && (
+        <ArrivalCinematic elapsed={cinematicElapsed} onSkip={()=>{introRef.current.active=false;setIntroCinematic(false);setNovaMessage({id:'pix-after-intro',speaker:'PIX',text:'Welcome, explorer! Follow the floor trail to wake the station, and meet the crew. The Science Academy is on the hub wall!',priority:'info'});}}/>
+      )}
+
       {/* In-Game HUD Overlay */}
-      {!inMenu && !missionState.stormEvaluated && (
+      {!inMenu && !introCinematic && !missionState.stormEvaluated && (
         <HUD
           state={missionState}
           focusedTarget={focusedTarget}
