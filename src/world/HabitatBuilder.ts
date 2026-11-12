@@ -770,12 +770,14 @@ export class HabitatBuilder {
       const vx = pos.getX(i);
       const vy = pos.getY(i);
       const dist = Math.hypot(vx, vy);
-      if (dist > 28) {
+      // Keep the entire expanded pressurized base on a level building pad.
+      // Distant terrain must NEVER intrude into the planetarium or other rooms.
+      if (dist > 44) {
         // High-frequency crater ridge elevations
         const ridge =
           Math.sin(vx * 0.07) * Math.cos(vy * 0.07) * 4.8 +
           Math.sin(vx * 0.18 + 1.2) * Math.cos(vy * 0.18) * 1.8 +
-          Math.max(0, (dist - 38) * 0.22);
+          Math.max(0, (dist - 51) * 0.13);
         pos.setZ(i, ridge);
       } else {
         pos.setZ(i, -0.4);
@@ -973,7 +975,7 @@ export class HabitatBuilder {
   /* -------------------------------------------------------------------------- */
 
   private buildAirborneDustMotes(): void {
-    const count = 300;
+    const count = 100;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
 
@@ -986,10 +988,10 @@ export class HabitatBuilder {
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     const mat = new THREE.PointsMaterial({
       color: 0xccd6dd,
-      size: 2.2,
+      size: 1.0,
       transparent: true,
-      opacity: 0.45,
-      blending: THREE.AdditiveBlending,
+      opacity: 0.20,
+      blending: THREE.NormalBlending,
       sizeAttenuation: false,
     });
     this.dustParticles = new THREE.Points(geo, mat);
