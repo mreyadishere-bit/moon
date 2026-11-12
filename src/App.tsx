@@ -439,17 +439,25 @@ export default function App() {
     scene.fog = null;
 
     if (renderer) {
-      const pmremGenerator = new THREE.PMREMGenerator(renderer);
-      scene.environment = pmremGenerator.fromScene(
-        new RoomEnvironment(),
-        0.04
-      ).texture;
-      pmremGenerator.dispose();
+      // Real GPU gets the full art direction; a SwiftShader/llvmpipe context
+      // uses low-cost shading and geometry to avoid locking up the browser.
+      const gl = renderer.getContext();
+      const debug = gl.getExtension('WEBGL_debug_renderer_info');
+      const gpuName = String(debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
+      const softwareRendering = /swiftshader|llvmpipe|softpipe|software raster|mesa offscreen/i.test(gpuName);
+      if (softwareRendering) {
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 0.85));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      } else {
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+        scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+        pmremGenerator.dispose();
+      }
 
-      habitat = new HabitatBuilder(scene, renderer);
+      habitat = new HabitatBuilder(scene, renderer, softwareRendering);
       const pix = new PixCompanion(scene);
       pixRef.current = pix;
-      renderer.compile(scene, camera);
+      if (!softwareRendering) renderer.compile(scene, camera);
     } else {
       // Browser has WebGL completely disabled: use 3D-projected Canvas2DRenderer
       fallback2D = new Canvas2DRenderer(activeCanvas);
