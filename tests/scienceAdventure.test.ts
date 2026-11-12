@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  NASA_OBSERVATIONS, START_ADVENTURE, adventureEnding, exampleSolarPowerKw,
+  AdventureState, NASA_OBSERVATIONS, START_ADVENTURE, adventureEnding, exampleSolarPowerKw,
   freeFallMeters, oneWayMoonSignalSeconds, trainWithDecision, verifyAdventureModel
 } from '../src/game/ScienceAdventure';
 
@@ -36,7 +36,7 @@ test('realistic Moon communication delay remains around 1.28 seconds one way',()
 });
 
 function play(branch:'energy'|'air'|'weather',power:'store'|'grow'|'breathe',air:'scrub'|'rest',garden:'recycle'|'lights',storm:'shelter'|'scan',comms:'ask'|'act'){
-  let s={...START_ADVENTURE,learned:[],choices:[]};
+  let s:AdventureState={...START_ADVENTURE,learned:[],choices:[]};
   const sequence=[branch,'gravity',power,air,garden,storm,comms];
   for(const choice of sequence) {
     const prevStage=s.stage;
