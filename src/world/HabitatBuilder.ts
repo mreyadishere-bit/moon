@@ -277,96 +277,71 @@ export class HabitatBuilder {
   }
 
   private createWallTexture(): { map: THREE.CanvasTexture; bump: THREE.CanvasTexture } {
-    const size = 1024;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d')!;
-
-    // Matte Lunar Composite Paneling (balanced warm-tinted off-white, no glare)
-    ctx.fillStyle = '#cfd5d8';
-    ctx.fillRect(0, 0, size, size);
-
-    // Subtle composite micro-texture grain
-    ctx.fillStyle = '#c5cbce';
-    for (let y = 0; y < size; y += 4) {
-      ctx.fillRect(0, y, size, 1);
-    }
-
-    // Modular wall panel seams (3 horizontal tiers x 2 vertical columns)
-    const colW = size / 2;
-    const rowH = size / 3;
-
-    for (let c = 0; c < 2; c++) {
-      for (let r = 0; r < 3; r++) {
-        const px = c * colW;
-        const py = r * rowH;
-
-        // Dark graphite structural frame groove
-        ctx.strokeStyle = '#2b3644';
-        ctx.lineWidth = 6;
-        ctx.strokeRect(px + 4, py + 4, colW - 8, rowH - 8);
-
-        // Soft chamfer highlight
-        ctx.strokeStyle = '#e8edf0';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(px + 8, py + 8, colW - 16, rowH - 16);
-
-        // Inner composite panel field
-        ctx.fillStyle = '#dbe1e4';
-        ctx.fillRect(px + 20, py + 20, colW - 40, rowH - 40);
-
-        // Precision titanium fastener rivets at panel corners
-        ctx.fillStyle = '#4a5768';
-        [
-          [14, 14],
-          [colW - 14, 14],
-          [14, rowH - 14],
-          [colW - 14, rowH - 14],
-        ].forEach(([bx, by]) => {
-          ctx.beginPath();
-          ctx.arc(px + bx, py + by, 3, 0, Math.PI * 2);
-          ctx.fill();
-        });
+    // One art-directed, low-glare modular ceramic-composite material for the
+    // entire habitat. Dark recessed chassis + satin service panels make the
+    // lighting read as physical architecture, rather than a white tile grid.
+    const size=1024;
+    const canvas=document.createElement('canvas');
+    canvas.width=size;canvas.height=size;
+    const g=canvas.getContext('2d')!;
+    g.fillStyle='#263746';g.fillRect(0,0,size,size);
+    const bumpCanvas=document.createElement('canvas');
+    bumpCanvas.width=512;bumpCanvas.height=512;
+    const h=bumpCanvas.getContext('2d')!;
+    h.fillStyle='#777777';h.fillRect(0,0,512,512);
+    const colW=size/2,rowH=size/3;
+    for(let c=0;c<2;c++)for(let row=0;row<3;row++){
+      const x=c*colW,y=row*rowH;
+      // Welded structural recess. Clear edges and deep reveal, no fake chalk lines.
+      g.fillStyle='#172b39';g.fillRect(x+6,y+6,colW-12,rowH-12);
+      g.fillStyle='#4a5d68';g.fillRect(x+15,y+14,colW-30,rowH-29);
+      g.fillStyle='#acb9be';g.fillRect(x+21,y+20,colW-42,rowH-43);
+      // A broad quiet material field: enough visual rest for important props.
+      g.fillStyle=row===1?'#a4afb6':'#aeb9bf';
+      g.fillRect(x+31,y+30,colW-62,rowH-70);
+      // Warm edge catches and graphite service channels share one visual logic.
+      g.fillStyle='#d0cbc0';g.fillRect(x+26,y+25,colW-52,3);
+      g.fillStyle='#263947';g.fillRect(x+23,y+rowH-43,colW-46,18);
+      g.fillStyle='#677b88';g.fillRect(x+27,y+rowH-39,colW-54,3);
+      // Precision fasteners mounted to the recess, not scattered randomly.
+      for(const ox of [32,colW-32]){
+        for(const oy of [34,rowH-33]){
+          g.fillStyle='#364957';g.beginPath();g.arc(x+ox,y+oy,6,0,Math.PI*2);g.fill();
+          g.fillStyle='#a2aeb5';g.beginPath();g.arc(x+ox,y+oy,2.1,0,Math.PI*2);g.fill();
+        }
       }
-    }
-
-    // Recessed dark graphite horizontal service conduit chase along lower tier
-    ctx.fillStyle = '#1c2430';
-    ctx.fillRect(0, rowH * 2 - 10, size, 20);
-    // Subtle cool cyan telemetry waveguide trace
-    ctx.fillStyle = '#48708c';
-    ctx.fillRect(0, rowH * 2 - 3, size, 6);
-
-    // Bump Map
-    const bumpCanvas = document.createElement('canvas');
-    bumpCanvas.width = 512;
-    bumpCanvas.height = 512;
-    const bCtx = bumpCanvas.getContext('2d')!;
-    bCtx.fillStyle = '#808080';
-    bCtx.fillRect(0, 0, 512, 512);
-
-    for (let c = 0; c < 2; c++) {
-      for (let r = 0; r < 3; r++) {
-        bCtx.strokeStyle = '#303030';
-        bCtx.lineWidth = 4;
-        bCtx.strokeRect(c * 256 + 2, r * 170 + 2, 252, 166);
+      // Some panels contain a functional access cover; not every tile needs it.
+      if((c+row)%3===0){
+        g.fillStyle='#71848e';g.fillRect(x+colW*.58,y+rowH*.28,124,89);
+        g.fillStyle='#283c49';g.fillRect(x+colW*.59,y+rowH*.30,114,82);
+        for(let k=0;k<5;k++){
+          g.fillStyle='#91a5ae';g.fillRect(x+colW*.615,y+rowH*.33+k*11,88,2);
+        }
+      } else if((c+row)%3===1){
+        g.fillStyle='rgba(36,67,83,.35)';
+        g.fillRect(x+57,y+rowH*.40,155,40);
+        g.fillStyle='#8e9fa8';g.fillRect(x+62,y+rowH*.43,85,7);
+        g.fillStyle='#b5a17e';g.fillRect(x+62,y+rowH*.51,42,5);
       }
+      // Bump is actual tonal relief, not the full color map reused as height.
+      const qx=x/2,qy=y/2,qw=colW/2,qh=rowH/2;
+      h.fillStyle='#555555';h.fillRect(qx+4,qy+4,qw-8,qh-8);
+      h.fillStyle='#a1a1a1';h.fillRect(qx+11,qy+11,qw-22,qh-22);
+      h.fillStyle='#bebebe';h.fillRect(qx+16,qy+16,qw-32,qh-37);
     }
-
-    const map = new THREE.CanvasTexture(canvas);
-    map.colorSpace = THREE.SRGBColorSpace;
-    map.wrapS = THREE.RepeatWrapping;
-    map.wrapT = THREE.RepeatWrapping;
-    map.repeat.set(4, 2);
-    map.anisotropy = Math.min(this.renderer.capabilities.getMaxAnisotropy(), 8);
-
-    const bump = new THREE.CanvasTexture(bumpCanvas);
-    bump.wrapS = THREE.RepeatWrapping;
-    bump.wrapT = THREE.RepeatWrapping;
-    bump.repeat.set(4, 2);
-
-    return { map, bump };
+    // Subtle directional micro-brushing, restrained at gameplay distance.
+    for(let i=0;i<1024;i+=7){
+      g.fillStyle='rgba(11,26,37,.028)';
+      g.fillRect(0,i,1024,1);
+    }
+    const map=new THREE.CanvasTexture(canvas);
+    map.colorSpace=THREE.SRGBColorSpace;
+    map.wrapS=THREE.RepeatWrapping;map.wrapT=THREE.RepeatWrapping;
+    map.repeat.set(4,2);map.anisotropy=Math.min(this.renderer.capabilities.getMaxAnisotropy(),8);
+    const bump=new THREE.CanvasTexture(bumpCanvas);
+    bump.wrapS=THREE.RepeatWrapping;bump.wrapT=THREE.RepeatWrapping;
+    bump.repeat.set(4,2);
+    return {map,bump};
   }
 
   private createBulkheadTexture(): THREE.CanvasTexture {
