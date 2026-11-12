@@ -46,7 +46,19 @@ export const CrewConversation:React.FC<{
  useEffect(()=>{
   const w=window as typeof window & {SpeechRecognition?:new()=>SpeechListener;webkitSpeechRecognition?:new()=>SpeechListener};
   setMicSupported(Boolean(w.SpeechRecognition||w.webkitSpeechRecognition));
-  return ()=>{abort.current?.abort();recognition.current?.stop();window.speechSynthesis?.cancel()};
+  const controller=new AbortController();
+  // Resolve availability at opening time: do not leave a permanent
+  // misleading "Checking live AI" status on public deployments.
+  fetch('/api/crew',{method:'GET',signal:controller.signal,cache:'no-store'})
+    .then(async r=>{
+      if(!r.ok)throw new Error('not available');
+      const status=await r.json() as {available?:boolean};
+      const mode=status.available?'online-ai':'offline';
+      modeRef.current=mode;
+      setMode(mode);
+    })
+    .catch(()=>{if(!controller.signal.aborted){modeRef.current='offline';setMode('offline');}});
+  return ()=>{controller.abort();abort.current?.abort();recognition.current?.stop();window.speechSynthesis?.cancel()};
  },[]);
  const speak=(text:string)=>{
   if(!voice||muted||!('speechSynthesis' in window))return;
