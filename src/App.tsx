@@ -803,6 +803,7 @@ export default function App() {
           initialTab={guidebookTab}
           onClose={() => setShowGuidebookModal(false)}
           onOpenAcademy={() => { setShowGuidebookModal(false); setShowAcademy(true); }}
+          onOpenPlanetarium={() => { setShowGuidebookModal(false); setShowPlanetarium(true); }}
           onTeleportToRoom={handleTeleportToRoom}
         />
       )}
