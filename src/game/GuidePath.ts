@@ -39,6 +39,9 @@ const distSq=(a:GuidePoint,b:GuidePoint)=>(a.x-b.x)**2+(a.z-b.z)**2;
 export function createStationGuidePath(
   start:GuidePoint, goal:GuidePoint, maxPoints=100,
 ):GuidePoint[] {
+  // Reject impossible or outside-world destinations before nearest-cell
+  // snapping; otherwise a point beyond the habitat appears reachable.
+  if(!insidePressurizedHabitat(goal.x,goal.z) || !insidePressurizedHabitat(start.x,start.z))return [];
   const collision=new CollisionSystem();
   for(let i=0;i<4;i++)collision.setDoorOpenFactor(i,1);
   const valid=(x:number,z:number)=>insidePressurizedHabitat(x,z)&&collision.isPointValid(x,z,RADIUS);
