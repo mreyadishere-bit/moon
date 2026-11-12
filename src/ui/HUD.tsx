@@ -183,37 +183,19 @@ export const HUD: React.FC<HUDProps> = ({
             )}
           </div>
 
-          {/* Compact kid-friendly world prompt: never cover the scene. */}
-          {focusedTarget && (
-            <div className="pointer-events-auto mt-3 max-w-[290px] rounded-2xl border border-[#d6b18a]/50 bg-[#0d2030]/92 px-3 py-2.5 text-center shadow-xl backdrop-blur-md">
-              <div className="flex items-center justify-center gap-2">
-                <span className="grid h-7 min-w-7 place-items-center rounded-lg bg-[#e6bc84] px-1 font-mono text-xs font-bold text-[#162733]">E</span>
-                <span className="truncate text-sm font-semibold text-[#f5f1e9]">
-                  {focusedTarget.actionType === 'academy' ? 'Science Academy' : focusedTarget.title}
-                </span>
-              </div>
-              <p className="mt-1 line-clamp-1 text-xs leading-4 text-[#bed2dc]">
-                {focusedTarget.actionType === 'physical_toggle' ? 'Use this machine' :
-                  focusedTarget.actionType === 'dialogue' ? 'Talk to your crewmate' :
-                  focusedTarget.actionType === 'observation' ? 'Look through the telescope' :
-                  focusedTarget.actionType === 'academy' ? 'Discover the science of space' : 'Open the mission controls'}
-              </p>
-              <button
-                type="button"
-                onClick={() => { soundFX.playClick(680); onInteract(); }}
-                className="mt-2 min-h-9 w-full rounded-xl bg-[#d9b787] px-3 text-xs font-bold text-[#172c3a] transition hover:bg-[#f1d2a0]"
-                aria-label={`Interact with ${focusedTarget.title}`}
-              >
-                Interact ↗
-              </button>
-            </div>
-          )}
+          {/* Interaction labels are placed at the screen edge, leaving the 3D world visible. */}
         </div>
 
-        {/* Bottom Banner: Dialogue & Story Notifications */}
-        <div className="flex flex-col items-center pointer-events-none pb-2">
+        {/* Ultra-small interaction affordance at the bottom edge, never at the reticle. */}
+        {focusedTarget && <div className="pointer-events-auto fixed bottom-5 left-1/2 z-20 flex max-w-[min(350px,95vw)] -translate-x-1/2 items-center gap-2 rounded-full border border-[#94b5c2]/40 bg-[#0e2230]/90 px-3 py-2 shadow-lg backdrop-blur-md">
+          <button type="button" onClick={() => {soundFX.playClick(680);onInteract()}} aria-label={'Use '+focusedTarget.title}
+            className="grid h-9 min-w-9 place-items-center rounded-full bg-[#d5b586] font-mono text-xs font-bold text-[#172a34] hover:bg-[#edd0a3]">E</button>
+          <span className="min-w-0 truncate text-xs font-medium text-[#e1edf2]">{focusedTarget.title}</span>
+        </div>}
+        {/* Compact field radio, safely tucked into the screen corner. */}
+        <div className="pointer-events-none pb-2">
           {novaMessage && (
-            <div className="pointer-events-auto max-w-xl w-full border border-[#76AEC9]/50 bg-[#0E1620]/95 backdrop-blur-md p-4 rounded-xl shadow-2xl animate-fade-in flex items-start gap-3.5">
+            <div className="pointer-events-auto fixed bottom-[84px] left-3 z-20 flex max-h-[155px] w-[min(365px,calc(100vw-24px))] items-start gap-2 overflow-y-auto rounded-xl border border-[#76AEC9]/40 bg-[#101e2b]/92 p-3 text-left shadow-xl backdrop-blur-lg animate-fade-in">
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
                   novaMessage.speaker === 'DR. MAYA CHEN'
