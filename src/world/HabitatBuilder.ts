@@ -135,7 +135,7 @@ export class HabitatBuilder {
       subtitle: 'Ask about Lunar Radiation, Gravity & Shielding [E]',
       actionType: 'dialogue',
       characterId: 'maya',
-      position: new THREE.Vector3(2.4, 1.4, 18.2),
+      position: new THREE.Vector3(3.0, 1.4, -1.7),
       mesh: this.crew.mayaGroup,
     });
 
@@ -2954,7 +2954,12 @@ export class HabitatBuilder {
 
     // 13. Update Station Crew Characters
     if (this.crew) {
-      this.crew.update(dt, playerPos);
+      this.crew.update(dt, playerPos, state.currentChapter);
+      const mayaTarget=this.interactives.find(t=>t.id==='crew_maya');
+      if(mayaTarget){
+        const p=this.crew.mayaGroup.position;
+        mayaTarget.position.set(p.x,1.4,p.z);
+      }
     }
   }
 }
