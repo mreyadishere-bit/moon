@@ -114,10 +114,12 @@ export class HabitatBuilder {
     this.buildLifeSupportRoom();
     this.buildRadiationRoom();
     this.buildGreenhouseRoom();
-    this.buildCozyVoxelDecorations();
-    new LunarArtPass(scene);
-    new LunarWonderArchitecture(scene);
-    new PremiumBulkheads(scene);
+    if (!this.isSoftwareGl) {
+      this.buildCozyVoxelDecorations();
+      new LunarArtPass(scene);
+      new LunarWonderArchitecture(scene);
+      new PremiumBulkheads(scene);
+    }
     this.buildDynamicFloorGuideTrail();
     this.buildObjectiveBeacon();
     this.buildAirborneDustMotes();
