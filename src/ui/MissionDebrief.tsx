@@ -19,7 +19,7 @@ export const MissionDebrief: React.FC<MissionDebriefProps> = ({
 
   const badgeTone =
     ending === 'stabilized'
-      ? { label: 'MISSION STABILIZED — JUNIOR ASTRONAUT CERTIFIED', color: 'text-[#77B89A]', border: 'border-[#77B89A]' }
+      ? { label: 'MISSION STABILIZED — LUNA-7 TRAINING COMPLETE', color: 'text-[#77B89A]', border: 'border-[#77B89A]' }
       : ending === 'compromised'
         ? { label: 'MISSION SURVIVED WITH COMPROMISES', color: 'text-[#E8AD66]', border: 'border-[#E8AD66]' }
         : { label: 'MISSION UNSUCCESSFUL — HABITAT EVACUATION TRIGGERED', color: 'text-[#DE6F60]', border: 'border-[#DE6F60]' };
@@ -50,6 +50,9 @@ export const MissionDebrief: React.FC<MissionDebriefProps> = ({
 
         {/* Body */}
         <div className="max-h-[75vh] overflow-y-auto p-6 space-y-6">
+          <div className="rounded-xl border border-[#9ec9e1]/30 bg-[#1a3141] p-4 text-xs leading-5 text-[#c9e0ea]">
+            Scientific integrity: This is a fictional LUNA-7 training scenario. The radiation and subsystem figures below are simplified simulated outputs, not NASA-measured astronaut doses or certified flight limits. Explore the NASA Sources for actual reference measurements.
+          </div>
           {/* 4 Final Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="border border-[#8E999E]/25 bg-[#16202B] p-4">
@@ -68,17 +71,17 @@ export const MissionDebrief: React.FC<MissionDebriefProps> = ({
                 {telemetry.co2Ppm} <span className="text-xs font-normal">ppm</span>
               </div>
               <div className="text-xs font-mono-tabular text-[#8E999E] mt-0.5">
-                NASA Target: ≤ 2,000 ppm
+                Training scenario goal: ≤ 2,000 ppm
               </div>
             </div>
 
             <div className="border border-[#8E999E]/25 bg-[#16202B] p-4">
-              <div className="text-xs font-mono-tabular text-[#8E999E]">STORM DOSE RATE</div>
+              <div className="text-xs font-mono-tabular text-[#8E999E]">SIMULATED STORM DOSE RATE</div>
               <div className="mt-1 text-2xl font-mono-tabular font-bold text-[#DE6F60]">
                 {telemetry.radiationDoseRateMsvHr.toFixed(3)} <span className="text-xs font-normal">mSv/h</span>
               </div>
               <div className="text-xs font-mono-tabular text-[#8E999E] mt-0.5">
-                Total Dose: {telemetry.cumulativeDoseMsv.toFixed(2)} mSv
+                Modelled cumulative dose: {telemetry.cumulativeDoseMsv.toFixed(2)} mSv
               </div>
             </div>
 
@@ -96,7 +99,7 @@ export const MissionDebrief: React.FC<MissionDebriefProps> = ({
           {/* System Evaluation Notes */}
           <div className="border border-[#8E999E]/25 bg-[#16202B] p-5 space-y-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-[#E7E9E6] font-display">
-              Engineering Systems Evaluation
+              Training Simulation Evaluation
             </h3>
             <ul className="space-y-2 text-xs leading-relaxed text-[#E7E9E6]/90">
               {finalSummaryNotes.map((note, idx) => (
