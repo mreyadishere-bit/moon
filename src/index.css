@@ -1,0 +1,94 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --font-display: 'Chakra Petch', sans-serif;
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #101820;
+    color: #E7E9E6;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    touch-action: none;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono-tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Custom subtle scrollbars for modal panels */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #101820;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A3642;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #76AEC9;
+}
+
+/* Cinematic Visor & Vignette Overlay */
+.cinematic-vignette {
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.75), inset 0 0 40px rgba(10, 16, 24, 0.5);
+  pointer-events: none;
+}
+
+.visor-frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, transparent 68%, rgba(12, 19, 28, 0.4) 94%, rgba(8, 12, 18, 0.8) 100%);
+  border: 1px solid rgba(118, 174, 201, 0.12);
+}
+
+.hud-glass {
+  background: rgba(16, 24, 32, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(142, 153, 158, 0.28);
+}
+
+@keyframes reticlePulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.18); opacity: 1; }
+}
+
+.reticle-active {
+  animation: reticlePulse 1.8s infinite ease-in-out;
+}
+
+
+/* Original Moonshift title art direction: cinematic, readable, never a dashboard. */
+.moon-menu-shade {
+  background:
+    radial-gradient(ellipse 72% 98% at -15% 55%, rgba(6, 12, 21, .96) 0%, rgba(8, 16, 26, .89) 52%, transparent 100%),
+    linear-gradient(90deg, rgba(6, 12, 22, .93) 0%, rgba(7, 13, 22, .82) 34%, rgba(7, 12, 20, .18) 75%),
+    linear-gradient(180deg, rgba(3, 7, 13, .55) 0%, transparent 24%, transparent 72%, rgba(3, 7, 13, .70) 100%);
+}
+.moon-logo-mark { width: 15px; height: 15px; border: 2px solid #abd5e4; border-radius: 50%; box-shadow: inset 5px -2px 0 #abd5e4, 0 0 15px rgba(110, 200, 226, .4); transform: rotate(-28deg); }
+.moon-display-title { font-size: clamp(4.8rem, 8.2vw, 9rem); text-shadow: 0 15px 70px rgba(0, 0, 0, .45); }
+.moon-menu-link { padding: 10px 12px; color: #d0dce7; border-bottom: 1px solid rgba(255,255,255,.16); transition: color .2s ease, border-color .2s ease; }
+.moon-menu-link:hover { color: white; border-color: #acd9e4; }
+.moon-menu-primary { background: #d6e5e9; color: #13212c; box-shadow: 0 12px 45px rgba(91, 173, 205, .16); }
+.moon-menu-primary:hover { background: #f4fcff; transform: translateY(-2px); box-shadow: 0 17px 45px rgba(91,173,205,.28); }
+.moon-menu-secondary { color: white; border: 1px solid rgba(220,237,248,.42); background: rgba(24,36,49,.42); backdrop-filter: blur(12px); }
+.moon-menu-secondary:hover { background: rgba(50, 79, 102, .72); }
+.observation-fallback { background: center / contain no-repeat url('/assets/earth-blue-marble.jpg'); }
+@media (max-width: 640px) { .moon-display-title { font-size: clamp(3.7rem, 16.2vw, 5.1rem); } .moon-menu-shade { background: linear-gradient(90deg, rgba(5,11,19,.96), rgba(5,11,19,.76)); } }

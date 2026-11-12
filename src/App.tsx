@@ -1,0 +1,633 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { soundFX } from './audio/AudioManager';
+import { ChallengeOverlay } from './challenges/ChallengeOverlay';
+import { CollisionSystem } from './game/CollisionSystem';
+import { InteractionSystem } from './game/InteractionSystem';
+import {
+  ChallengeId,
+  createInitialMissionState,
+  MissionStateData,
+  RoomId,
+} from './game/MissionState';
+import { PlayerController } from './game/PlayerController';
+import { GameSettings, SaveManager } from './game/SaveManager';
+import { SimulationEngine } from './game/SimulationEngine';
+import { NovaMessage, StoryDirector } from './narrative/StoryDirector';
+import { HUD } from './ui/HUD';
+import { GuidebookModal } from './ui/GuidebookModal';
+import { MainMenu } from './ui/MainMenu';
+import { MissionDebrief } from './ui/MissionDebrief';
+import { ScienceModal } from './ui/ScienceModal';
+import { SettingsModal } from './ui/SettingsModal';
+import { CharacterDialogue, StationCrew } from './characters/StationCrew';
+import { PixCompanion } from './characters/PixCompanion';
+import { DialogueModal } from './ui/DialogueModal';
+import { ObservationModal } from './ui/ObservationModal';
+import { Canvas2DRenderer } from './world/Canvas2DRenderer';
+import { HabitatBuilder, InteractiveTarget } from './world/HabitatBuilder';
+
+export default function App() {
+  const canvasMountRef = useRef<HTMLDivElement | null>(null);
+
+  const [missionState, setMissionState] = useState<MissionStateData>(() => {
+    const initial = createInitialMissionState();
+    SimulationEngine.recomputeDerivedState(initial);
+    return initial;
+  });
+
+  const [inMenu, setInMenu] = useState<boolean>(true);
+  const [hasSavedGame, setHasSavedGame] = useState<boolean>(() =>
+    SaveManager.hasSavedMission()
+  );
+  const [activeChallenge, setActiveChallenge] = useState<ChallengeId | null>(null);
+  const [showScienceModal, setShowScienceModal] = useState<boolean>(false);
+  const [showObservationModal, setShowObservationModal] = useState<boolean>(false);
+  const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
+  const [showGuidebookModal, setShowGuidebookModal] = useState<boolean>(false);
+  const [guidebookTab, setGuidebookTab] = useState<'mission' | 'map' | 'controls' | 'discoveries' | 'science'>('mission');
+  const [activeDialogue, setActiveDialogue] = useState<CharacterDialogue | null>(null);
+  const [playerYaw, setPlayerYaw] = useState<number>(0);
+  const [playerPosState, setPlayerPosState] = useState<{ x: number; z: number }>({ x: 0, z: 0 });
+  const [settings, setSettings] = useState<GameSettings>(() =>
+    SaveManager.loadSettings()
+  );
+  const [focusedTarget, setFocusedTarget] = useState<InteractiveTarget | null>(null);
+  const [novaMessage, setNovaMessage] = useState<NovaMessage | null>(
+    StoryDirector.getOpeningSequence()[0]
+  );
+
+  // Mutable refs for the render loop so React state updates never recreate the canvas
+  const stateRef = useRef<MissionStateData>(missionState);
+  stateRef.current = missionState;
+
+  const inMenuRef = useRef<boolean>(inMenu);
+  inMenuRef.current = inMenu;
+
+  const activeModalRef = useRef<boolean>(false);
+  activeModalRef.current =
+    inMenu ||
+    Boolean(activeChallenge) ||
+    Boolean(activeDialogue) ||
+    showObservationModal ||
+    showScienceModal ||
+    showSettingsModal ||
+    showGuidebookModal ||
+    missionState.stormEvaluated;
+
+  const playerRef = useRef<PlayerController | null>(null);
+  const focusedTargetRef = useRef<InteractiveTarget | null>(null);
+  const pixRef = useRef<PixCompanion | null>(null);
+
+  // Apply settings to audio and player controller
+  useEffect(() => {
+    soundFX.setVolume(settings.audioVolume, settings.muted);
+    if (playerRef.current) {
+      playerRef.current.sensitivity = settings.mouseSensitivity;
+    }
+    SaveManager.saveSettings(settings);
+  }, [settings]);
+
+  // Enable/disable first-person movement when menus/consoles open
+  useEffect(() => {
+    if (playerRef.current) {
+      playerRef.current.setEnabled(!activeModalRef.current);
+    }
+  }, [inMenu, activeChallenge, activeDialogue, showObservationModal, showScienceModal, showSettingsModal, showGuidebookModal, missionState.stormEvaluated]);
+
+  const updateMissionState = useCallback(
+    (
+      updater: (draft: MissionStateData) => void,
+      logAction?: { system: string; action: string; impact: string }
+    ) => {
+      setMissionState((prev) => {
+        const next: MissionStateData = JSON.parse(JSON.stringify(prev));
+        updater(next);
+        if (logAction) {
+          const hrs = Math.floor(next.telemetry.missionHoursRemaining);
+          const mins = Math.floor((next.telemetry.missionHoursRemaining - hrs) * 60);
+          next.decisions.push({
+            timestampMissionHr: `T-${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`,
+            system: logAction.system,
+            action: logAction.action,
+            scientificImpact: logAction.impact,
+          });
+        }
+        SimulationEngine.recomputeDerivedState(next);
+        SaveManager.saveMission(next);
+        stateRef.current = next;
+        return next;
+      });
+    },
+    []
+  );
+
+  const handlePhysicalInteract = useCallback(
+    (target: InteractiveTarget | null) => {
+      const t = target || focusedTargetRef.current;
+      if (!t) return; // Interaction must always target a nearby object, never open a random console.
+
+      // Chapter 1 special interaction: Restoring main power from the hub console
+      if (t.id === 'console_hub' && !stateRef.current.stationLightsOn) {
+        soundFX.playSuccessChord();
+        updateMissionState(
+          (d) => {
+            d.stationLightsOn = true;
+            d.currentChapter = 2;
+          },
+          {
+            system: 'Main Hub Terminal',
+            action: 'Brought LUNA-7 Out of Emergency Standby',
+            impact: 'Restored primary habitat lighting and navigation systems.',
+          }
+        );
+        setNovaMessage({
+          id: 'nova-power-restored',
+          speaker: 'NOVA',
+          text: 'Perfect! You just brought the main systems online. But Maya is sheltered in the radiation module, and our batteries are running low. Follow the glowing floor path to the Power Room (North).',
+          priority: 'success',
+        });
+        return;
+      }
+
+      if (t.actionType === 'observation') {
+        soundFX.playClick(670);
+        setShowObservationModal(true);
+        return;
+      }
+
+      if (t.actionType === 'dialogue' && t.characterId) {
+        soundFX.playClick(640);
+        const dialogue = StationCrew.getCharacterDialogue(
+          t.characterId,
+          stateRef.current.currentChapter
+        );
+        setActiveDialogue(dialogue);
+        pixRef.current?.say(`Talking to ${dialogue.speaker}!`, 3);
+        return;
+      }
+
+      if (t.actionType === 'open_challenge' && t.challengeId) {
+        soundFX.playClick(680);
+        setActiveChallenge(t.challengeId);
+        return;
+      }
+
+      soundFX.playSwitchMechanical();
+      if (t.id === 'switch_power_dust') {
+        updateMissionState(
+          (d) => {
+            d.power.dustCleared = !d.power.dustCleared;
+            d.power.busbarBalanced = true;
+          },
+          {
+            system: 'Power Core (3D Breaker)',
+            action: 'Pulsed Electrostatic Dust Breaker & Tied Busbars',
+            impact: 'Cleared lunar dust occlusion on Solar Array Bus A.',
+          }
+        );
+        setNovaMessage({
+          id: 'nova-dust',
+          speaker: 'NOVA',
+          text: 'Electrostatic dust curtain energized! Solar busbar tied. Open the Power Console to complete panel alignment.',
+          priority: 'success',
+        });
+      } else if (t.id === 'switch_lifesupport_valve') {
+        updateMissionState(
+          (d) => {
+            d.lifeSupport.airflowDamperOpen = true;
+            d.lifeSupport.zeoliteBedPurged = true;
+            d.lifeSupport.backupO2ValveCycled = true;
+          },
+          {
+            system: 'Life Support (3D Valve)',
+            action: 'Opened Airflow Damper & Initiated Zeolite Thermal Purge',
+            impact: 'Restored cabin duct circulation and desorbed CO₂ bed.',
+          }
+        );
+        setNovaMessage({
+          id: 'nova-valve',
+          speaker: 'NOVA',
+          text: 'Airflow damper open and Zeolite filtration purged! Now adjust fans and O₂ levels at the Life Support Console.',
+          priority: 'success',
+        });
+      } else if (t.id === 'switch_radiation_latch') {
+        updateMissionState(
+          (d) => {
+            d.radiation.stormShutterClosed = true;
+            d.radiation.bulkheadLatched = !d.radiation.bulkheadLatched;
+          },
+          {
+            system: 'Radiation Shelter (3D Latch)',
+            action: 'Deployed External Storm Shutter & Hydraulic Bulkhead Latch',
+            impact: 'Locked structural radiation shield bay over South Bulkhead.',
+          }
+        );
+        setNovaMessage({
+          id: 'nova-latch',
+          speaker: 'NOVA',
+          text: 'Hydraulic storm bulkhead locked! Configure the 3-layer protective shielding at the Radiation Console.',
+          priority: 'success',
+        });
+      } else if (t.id === 'switch_greenhouse_valve') {
+        updateMissionState(
+          (d) => {
+            d.greenhouse.condensateLoopClosed = !d.greenhouse.condensateLoopClosed;
+          },
+          {
+            system: 'Greenhouse (3D Manifold)',
+            action: 'Closed Transpiration Condensate Recovery Manifold',
+            impact: 'Reclaimed 96% of transpired plant water vapor into potable storage.',
+          }
+        );
+        setNovaMessage({
+          id: 'nova-cond',
+          speaker: 'NOVA',
+          text: 'Condensate recovery loop closed! Now tune irrigation and grow lighting at the Hydroponics Console.',
+          priority: 'success',
+        });
+      }
+    },
+    [updateMissionState]
+  );
+
+  // Global keyboard shortcuts (E to interact, J for guidebook, M for map, H for guide trail, Escape for menu)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Escape') {
+        if (showObservationModal) {
+          setShowObservationModal(false);
+        } else if (activeDialogue) {
+          setActiveDialogue(null);
+        } else if (showGuidebookModal) {
+          setShowGuidebookModal(false);
+        } else if (activeChallenge) {
+          setActiveChallenge(null);
+        } else if (showScienceModal) {
+          setShowScienceModal(false);
+        } else if (showSettingsModal) {
+          setShowSettingsModal(false);
+        } else if (!inMenu && !stateRef.current.stormEvaluated) {
+          setShowSettingsModal(true);
+        }
+      } else if (e.code === 'KeyE' && !activeModalRef.current) {
+        handlePhysicalInteract(focusedTargetRef.current);
+      } else if (e.code === 'KeyJ' && !inMenu && !stateRef.current.stormEvaluated) {
+        setShowGuidebookModal((prev) => !prev);
+        setGuidebookTab('mission');
+        soundFX.playClick(620);
+      } else if (e.code === 'KeyM' && !inMenu && !stateRef.current.stormEvaluated) {
+        setShowGuidebookModal(true);
+        setGuidebookTab('map');
+        soundFX.playClick(620);
+      } else if (e.code === 'KeyH' && !inMenu && !stateRef.current.stormEvaluated) {
+        updateMissionState((d) => {
+          d.guideTrailActive = !(d.guideTrailActive ?? true);
+        });
+        soundFX.playClick(520);
+      } else if (e.code === 'F3') {
+        window.dispatchEvent(new CustomEvent('toggle-collision-debug'));
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [
+    activeChallenge,
+    activeDialogue,
+    showObservationModal,
+    showScienceModal,
+    showSettingsModal,
+    showGuidebookModal,
+    inMenu,
+    handlePhysicalInteract,
+    updateMissionState,
+  ]);
+
+  // Initialize 3D Scene (Three.js WebGLRenderer with automatic Canvas2DRenderer fallback if WebGL is disabled in browser)
+  useEffect(() => {
+    const container = canvasMountRef.current;
+    if (!container) return;
+
+    const camera = new THREE.PerspectiveCamera(
+      68,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      220
+    );
+    const collision = new CollisionSystem();
+    const interaction = new InteractionSystem();
+
+    let renderer: THREE.WebGLRenderer | null = null;
+    let habitat: HabitatBuilder | null = null;
+    let fallback2D: Canvas2DRenderer | null = null;
+    let activeCanvas: HTMLCanvasElement;
+
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        powerPreference: 'high-performance',
+        alpha: false,
+        stencil: false,
+        depth: true,
+      });
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      activeCanvas = renderer.domElement;
+    } catch {
+      renderer = null;
+      activeCanvas = document.createElement('canvas');
+    }
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x06090f);
+    scene.fog = new THREE.FogExp2(0x06090f, 0.005);
+
+    if (renderer) {
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmremGenerator.fromScene(
+        new RoomEnvironment(),
+        0.04
+      ).texture;
+      pmremGenerator.dispose();
+
+      habitat = new HabitatBuilder(scene, renderer);
+      const pix = new PixCompanion(scene);
+      pixRef.current = pix;
+      renderer.compile(scene, camera);
+    } else {
+      // Browser has WebGL completely disabled: use 3D-projected Canvas2DRenderer
+      fallback2D = new Canvas2DRenderer(activeCanvas);
+      fallback2D.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    container.innerHTML = '';
+    container.appendChild(activeCanvas);
+
+    const player = new PlayerController(camera, activeCanvas, collision);
+    playerRef.current = player;
+
+    const interactivesList = habitat
+      ? habitat.interactives
+      : fallback2D!.interactives;
+
+    const clock = new THREE.Clock();
+    let frameId = 0;
+    let uiSyncAccumulator = 0;
+
+    function tick() {
+      const dt = Math.min(clock.getDelta(), 0.1);
+      const elapsed = clock.getElapsedTime();
+      const currentState = stateRef.current;
+
+      if (inMenuRef.current) {
+        camera.position.set(
+          Math.sin(elapsed * 0.18) * 1.8,
+          1.95,
+          3.4 + Math.cos(elapsed * 0.18) * 0.6
+        );
+        camera.lookAt(1.2, 1.5, -6.0);
+      } else {
+        const detectedRoom = player.update(dt);
+        if (pixRef.current) {
+          pixRef.current.update(dt, player.position, player.yaw);
+        }
+        if (detectedRoom !== currentState.currentRoom) {
+          currentState.currentRoom = detectedRoom;
+          pixRef.current?.reactToRoom(detectedRoom);
+          const roomMsg = StoryDirector.getRoomEntryLine(
+            detectedRoom,
+            currentState
+          );
+          if (roomMsg) {
+            setNovaMessage(roomMsg);
+          }
+        }
+
+        const target = interaction.findFocusedTarget(camera, interactivesList);
+        if (target?.id !== focusedTargetRef.current?.id) {
+          focusedTargetRef.current = target;
+          setFocusedTarget(target);
+        }
+
+        SimulationEngine.step(currentState, dt);
+        uiSyncAccumulator += dt;
+        if (uiSyncAccumulator >= 0.1) {
+          uiSyncAccumulator = 0;
+          setPlayerYaw(player.yaw);
+          setPlayerPosState({ x: player.position.x, z: player.position.z });
+          setMissionState({
+            ...currentState,
+            telemetry: { ...currentState.telemetry },
+          });
+        }
+      }
+
+      if (renderer && habitat) {
+        habitat.update(dt, player.position, currentState);
+        // Synchronize animated door opening factors to physical collision system
+        habitat.doors.forEach((door, idx) => {
+          collision.setDoorOpenFactor(idx, door.openFactor);
+        });
+        renderer.render(scene, camera);
+      } else if (fallback2D) {
+        fallback2D.render(camera, currentState, elapsed);
+      }
+
+      frameId = requestAnimationFrame(tick);
+    }
+
+    // Toggleable collision debug wireframe mesh group (F3)
+    let debugGroup: THREE.Group | null = null;
+    const onToggleDebug = () => {
+      if (!scene || !collision) return;
+      if (debugGroup) {
+        scene.remove(debugGroup);
+        debugGroup = null;
+      } else {
+        debugGroup = collision.createDebugVisualizationGroup();
+        scene.add(debugGroup);
+      }
+    };
+    window.addEventListener('toggle-collision-debug', onToggleDebug);
+
+    tick();
+
+    const onResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      if (renderer) {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+      if (fallback2D) {
+        fallback2D.setSize(window.innerWidth, window.innerHeight);
+      }
+    };
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('toggle-collision-debug', onToggleDebug);
+      player.dispose();
+      renderer?.dispose();
+    };
+  }, []);
+
+  const handleStartNewMission = () => {
+    const fresh = createInitialMissionState();
+    fresh.started = true;
+    SimulationEngine.recomputeDerivedState(fresh);
+    SaveManager.saveMission(fresh);
+    stateRef.current = fresh;
+    setMissionState(fresh);
+    setHasSavedGame(true);
+    setActiveChallenge(null);
+    setShowObservationModal(false);
+    setNovaMessage(StoryDirector.getOpeningSequence()[0]);
+    playerRef.current?.teleportToRoom('hub');
+    setInMenu(false);
+  };
+
+  const handleContinueMission = () => {
+    const saved = SaveManager.loadMission();
+    if (saved) {
+      saved.started = true;
+      stateRef.current = saved;
+      setMissionState(saved);
+      playerRef.current?.teleportToRoom(saved.currentRoom);
+      setInMenu(false);
+    } else {
+      handleStartNewMission();
+    }
+  };
+
+  const handleTeleportToRoom = (room: RoomId) => {
+    playerRef.current?.teleportToRoom(room);
+    updateMissionState((d) => {
+      d.currentRoom = room;
+    });
+    const line = StoryDirector.getRoomEntryLine(room, stateRef.current);
+    if (line) setNovaMessage(line);
+  };
+
+  const handleTriggerFinalStorm = () => {
+    setActiveChallenge(null);
+    updateMissionState((d) => {
+      SimulationEngine.evaluateFinalStormTransit(d);
+    });
+  };
+
+  return (
+    <div className="relative h-screen w-screen overflow-hidden bg-[#101820] select-none">
+      {/* Dedicated Canvas Container */}
+      <div
+        ref={canvasMountRef}
+        className="absolute inset-0 h-full w-full z-0"
+      />
+
+      {showObservationModal && <ObservationModal onClose={() => setShowObservationModal(false)} />}
+
+      {/* Main Menu Overlay */}
+      {inMenu && (
+        <MainMenu
+          hasSavedGame={hasSavedGame}
+          onStartNew={handleStartNewMission}
+          onContinue={handleContinueMission}
+          onOpenSettings={() => setShowSettingsModal(true)}
+          onOpenScience={() => setShowScienceModal(true)}
+        />
+      )}
+
+      {/* In-Game HUD Overlay */}
+      {!inMenu && !missionState.stormEvaluated && (
+        <HUD
+          state={missionState}
+          focusedTarget={focusedTarget}
+          novaMessage={novaMessage}
+          playerYaw={playerYaw}
+          onInteract={() => handlePhysicalInteract(focusedTarget)}
+          onOpenGuidebook={(tab) => {
+            setGuidebookTab(tab || 'mission');
+            setShowGuidebookModal(true);
+          }}
+          onToggleGuideTrail={() => {
+            updateMissionState((d) => {
+              d.guideTrailActive = !(d.guideTrailActive ?? true);
+            });
+            soundFX.playClick(520);
+          }}
+          onOpenSettings={() => setShowSettingsModal(true)}
+          onReturnToMenu={() => setInMenu(true)}
+          onDismissNovaMessage={() => setNovaMessage(null)}
+        />
+      )}
+
+      {/* In-Game Astronaut Field Journal & Guidebook */}
+      {showGuidebookModal && (
+        <GuidebookModal
+          state={missionState}
+          playerPos={playerPosState}
+          initialTab={guidebookTab}
+          onClose={() => setShowGuidebookModal(false)}
+          onTeleportToRoom={handleTeleportToRoom}
+        />
+      )}
+
+      {/* Crew Character Interactive Dialogue */}
+      {activeDialogue && (
+        <DialogueModal
+          dialogue={activeDialogue}
+          onClose={() => setActiveDialogue(null)}
+        />
+      )}
+
+      {/* Focused Console Challenge Overlay */}
+      {activeChallenge && (
+        <ChallengeOverlay
+          challengeId={activeChallenge}
+          state={missionState}
+          onUpdateState={updateMissionState}
+          onClose={() => setActiveChallenge(null)}
+          onTriggerFinalStorm={handleTriggerFinalStorm}
+        />
+      )}
+
+      {/* Final Mission Debrief */}
+      {missionState.stormEvaluated && (
+        <MissionDebrief
+          state={missionState}
+          onRestart={handleStartNewMission}
+          onContinueExploring={() => {
+            updateMissionState((d) => {
+              d.stormEvaluated = false;
+              d.ending = 'none';
+              d.telemetry.missionHoursRemaining = 6.0;
+            });
+          }}
+          onOpenScience={() => setShowScienceModal(true)}
+        />
+      )}
+
+      {/* NASA Science & Sources Modal */}
+      {showScienceModal && (
+        <ScienceModal onClose={() => setShowScienceModal(false)} />
+      )}
+
+      {/* Settings & Accessibility Modal */}
+      {showSettingsModal && (
+        <SettingsModal
+          settings={settings}
+          onUpdateSettings={setSettings}
+          onResetMission={handleStartNewMission}
+          onClose={() => setShowSettingsModal(false)}
+        />
+      )}
+    </div>
+  );
+}

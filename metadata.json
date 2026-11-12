@@ -1,0 +1,6 @@
+{
+  "name": "MOONSHIFT: The Last 24 Hours",
+  "description": "A 3D first-person lunar habitat emergency mission trainer where interconnected solar power, life support, radiation shielding, and greenhouse systems determine crew survival.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
