@@ -4,6 +4,8 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { soundFX } from './audio/AudioManager';
 import { ChallengeOverlay } from './challenges/ChallengeOverlay';
 import { EmergencyRepair } from './challenges/EmergencyRepair';
+import { AdventureAcademy } from './ui/AdventureAcademy';
+import { AdventureState, resetAdventure } from './game/ScienceAdventure';
 import { CollisionSystem } from './game/CollisionSystem';
 import { InteractionSystem } from './game/InteractionSystem';
 import {
@@ -44,6 +46,7 @@ export default function App() {
   );
   const [activeChallenge, setActiveChallenge] = useState<ChallengeId | null>(null);
   const [activeRepair, setActiveRepair] = useState<ChallengeId | null>(null);
+  const [showAcademy, setShowAcademy] = useState(false);
   const [showScienceModal, setShowScienceModal] = useState<boolean>(false);
   const [showObservationModal, setShowObservationModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
@@ -74,6 +77,7 @@ export default function App() {
     inMenu ||
     Boolean(activeChallenge) ||
     Boolean(activeRepair) ||
+    showAcademy ||
     Boolean(activeDialogue) ||
     showObservationModal ||
     showScienceModal ||
@@ -99,7 +103,7 @@ export default function App() {
     if (playerRef.current) {
       playerRef.current.setEnabled(!activeModalRef.current);
     }
-  }, [inMenu, activeChallenge, activeRepair, activeDialogue, showObservationModal, showScienceModal, showSettingsModal, showGuidebookModal, missionState.stormEvaluated]);
+  }, [inMenu, activeChallenge, activeRepair, showAcademy, activeDialogue, showObservationModal, showScienceModal, showSettingsModal, showGuidebookModal, missionState.stormEvaluated]);
 
   const updateMissionState = useCallback(
     (
@@ -263,7 +267,9 @@ export default function App() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Escape') {
-        if (activeRepair) {
+        if (showAcademy) {
+          setShowAcademy(false);
+        } else if (activeRepair) {
           setActiveRepair(null);
         } else if (showObservationModal) {
           setShowObservationModal(false);
@@ -304,6 +310,7 @@ export default function App() {
   }, [
     activeChallenge,
     activeRepair,
+    showAcademy,
     activeDialogue,
     showObservationModal,
     showScienceModal,
@@ -518,6 +525,8 @@ export default function App() {
     setHasSavedGame(true);
     setActiveChallenge(null);
     setActiveRepair(null);
+    resetAdventure();
+    setShowAcademy(true);
     setShowObservationModal(false);
     setNovaMessage(StoryDirector.getOpeningSequence()[0]);
     playerRef.current?.teleportToRoom('hub');
@@ -593,6 +602,45 @@ export default function App() {
           onContinue={handleContinueMission}
           onOpenSettings={() => setShowSettingsModal(true)}
           onOpenScience={() => setShowScienceModal(true)}
+        />
+      )}
+
+      {!inMenu && !missionState.stormEvaluated && !showAcademy && (
+        <button type="button" onClick={() => setShowAcademy(true)}
+          className="fixed bottom-5 left-5 z-30 rounded-2xl border border-[#9ecddc]/55 bg-[#0e2636]/90 px-4 py-3 text-sm font-semibold text-[#e5f4f9] shadow-xl backdrop-blur-md transition hover:border-[#d0e9f1] hover:bg-[#24475c]"
+          title="Continue the interactive NASA science adventure">
+          ✦ Story & Science Academy
+        </button>
+      )}
+      {showAcademy && (
+        <AdventureAcademy
+          onClose={() => setShowAcademy(false)}
+          onExplore={() => { setShowAcademy(false); setNovaMessage({id:'academy-explore',speaker:'NOVA',text:'Great work, explorer! Now try fixing real systems in the 3D station. Follow the glowing floor trail and talk to our crew.',priority:'success'}); }}
+          onDecision={(stage:number,choice:string,training:AdventureState) => {
+            const key = 'lesson-' + stage;
+            if (stateRef.current.decisions.some(entry => entry.system === 'Science Academy' && entry.action.startsWith(key + ':'))) return;
+            updateMissionState((d) => {
+              if(stage===0) {
+                if(choice==='energy')d.telemetry.batteryKwh=Math.max(15,d.telemetry.batteryKwh-7);
+                if(choice==='air')d.telemetry.oxygenReservePct=Math.max(50,d.telemetry.oxygenReservePct-10);
+              }
+              if(stage===2) {
+                if(choice==='breathe'){d.power.eclssAllocationKw=6;d.power.greenhouseAllocationKw=3.5;}
+                if(choice==='grow'){d.power.greenhouseAllocationKw=5.5;d.power.eclssAllocationKw=4.5;}
+                if(choice==='store'){d.power.greenhouseAllocationKw=3.5;d.power.eclssAllocationKw=4.5;}
+              }
+              if(stage===3) {
+                if(choice==='scrub')d.power.eclssAllocationKw=Math.max(6,d.power.eclssAllocationKw);
+                if(choice==='rest')d.power.eclssAllocationKw=3.5;
+              }
+              if(stage===4) {
+                if(choice==='recycle')d.greenhouse.dripIrrigationLitersHr=2;
+                if(choice==='lights')d.power.greenhouseAllocationKw=5.5;
+              }
+              if(stage===5 && choice==='shelter') d.power.radiationAllocationKw=2;
+              if(stage===6 && choice==='ask') d.telemetry.batteryKwh=Math.max(0,d.telemetry.batteryKwh-1);
+            },{system:'Science Academy',action:key + ':' + choice,impact:'Training decision changed the 3D habitat allocation. Educational model result: battery '+training.batteryKwh.toFixed(1)+' kWh, air '+training.air+', shelter '+training.safety+'.'});
+          }}
         />
       )}
 
