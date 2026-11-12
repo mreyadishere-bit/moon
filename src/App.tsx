@@ -435,7 +435,8 @@ export default function App() {
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x06090f);
-    scene.fog = new THREE.FogExp2(0x06090f, 0.005);
+    // Vacuum has negligible atmospheric scattering. No fantasy lunar fog; depth comes from lighting and geometry.
+    scene.fog = null;
 
     if (renderer) {
       const pmremGenerator = new THREE.PMREMGenerator(renderer);
