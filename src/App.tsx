@@ -408,7 +408,7 @@ export default function App() {
         });
         candidate.outputColorSpace = THREE.SRGBColorSpace;
         candidate.toneMapping = THREE.ACESFilmicToneMapping;
-        candidate.toneMappingExposure = 1.0;
+        candidate.toneMappingExposure = 0.86; // Retain material detail in bright lunar station panels
         candidate.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         candidate.setSize(window.innerWidth, window.innerHeight);
         candidate.shadowMap.enabled = true;
@@ -435,6 +435,7 @@ export default function App() {
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x06090f);
+    scene.environmentIntensity = 0.65; // Prevent metallic surfaces washing out
     // Vacuum has negligible atmospheric scattering. No fantasy lunar fog; depth comes from lighting and geometry.
     scene.fog = null;
 
