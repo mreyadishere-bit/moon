@@ -37,6 +37,11 @@ test('kid-friendly AI character knowledge is grounded and validated',()=>{
  assert.ok(!isCrewId('villain'));
  assert.equal(Object.keys(CREW).length,5);
  const ctx=safeCrewContext({room:'hub',objective:'Restore battery',nearby:'Solar battery',chapter:2,power:20,air:60,shelter:75,choices:['Save energy']});
+ const roomAnswer=localCrewAnswer('leo','what is this room?',{...ctx,room:'power',nearby:'Leo (Chief Engineer)'});
+ assert.match(roomAnswer.text,/power core|batteries/i);
+ assert.doesNotMatch(roomAnswer.text,/You're looking at Leo/i);
+ const observatoryAnswer=localCrewAnswer('pix','where am i?',{...ctx,room:'planetarium'});
+ assert.match(observatoryAnswer.text,/Solar System Observatory/i);
  const answer=localCrewAnswer('leo','Why do solar panels matter?',ctx);
  assert.match(answer.text,/batter|electric/i);
  assert.ok(answer.source?.startsWith('https://'));
