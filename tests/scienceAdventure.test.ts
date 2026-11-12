@@ -56,9 +56,9 @@ function play(branch:'energy'|'air'|'weather',power:'store'|'grow'|'breathe',air
   return s;
 }
 test('distinct energy, air and weather branches produce different consequences',()=>{
-  const a=play('energy','store','scrub','recycle','shelter','act');
+  const a=play('weather','store','scrub','recycle','shelter','act');
   const b=play('air','grow','rest','lights','scan','ask');
-  const c=play('weather','breathe','scrub','lights','shelter','act');
+  const c=play('energy','breathe','scrub','lights','shelter','act');
   assert.notDeepEqual([a.batteryKwh,a.air,a.safety,a.water],[b.batteryKwh,b.air,b.safety,b.water]);
   assert.notDeepEqual([a.batteryKwh,a.air,a.safety],[c.batteryKwh,c.air,c.safety]);
   assert.notEqual(adventureEnding(a).title,adventureEnding(b).title);
