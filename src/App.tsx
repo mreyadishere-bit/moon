@@ -5,6 +5,7 @@ import { soundFX } from './audio/AudioManager';
 import { ChallengeOverlay } from './challenges/ChallengeOverlay';
 import { EmergencyRepair } from './challenges/EmergencyRepair';
 import { RescueTasks } from './challenges/RescueTasks';
+import { KidFriendlyConsole } from './challenges/KidFriendlyConsole';
 import { AdventureAcademy } from './ui/AdventureAcademy';
 import { AdventureState, readAdventure, resetAdventure } from './game/ScienceAdventure';
 import { CollisionSystem } from './game/CollisionSystem';
@@ -47,6 +48,7 @@ export default function App() {
   );
   const [activeChallenge, setActiveChallenge] = useState<ChallengeId | null>(null);
   const [activeRepair, setActiveRepair] = useState<ChallengeId | null>(null);
+  const [advancedConsole, setAdvancedConsole] = useState(false);
   const [showAcademy, setShowAcademy] = useState(false);
   const [showScienceModal, setShowScienceModal] = useState<boolean>(false);
   const [showObservationModal, setShowObservationModal] = useState<boolean>(false);
@@ -211,7 +213,7 @@ export default function App() {
       if (t.actionType === 'open_challenge' && t.challengeId) {
         soundFX.playClick(680);
         const repaired = stateRef.current.decisions.some((entry) => entry.system === 'Mini-game repair' && entry.action === t.challengeId);
-        if (repaired) setActiveChallenge(t.challengeId);
+        if (repaired) { setAdvancedConsole(false); setActiveChallenge(t.challengeId); }
         else setActiveRepair(t.challengeId);
         return;
       }
@@ -556,6 +558,7 @@ export default function App() {
     setHasSavedGame(true);
     setActiveChallenge(null);
     setActiveRepair(null);
+    setAdvancedConsole(false);
     resetAdventure();
     setShowAcademy(true);
     setShowObservationModal(false);
@@ -734,6 +737,7 @@ export default function App() {
               impact: 'Restored the educational system connection before evaluating resource trade-offs.',
             });
             setActiveRepair(null);
+            setAdvancedConsole(false);
             setActiveChallenge(completed);
             setNovaMessage({ id: 'repair-' + completed, speaker: 'NOVA', text: 'Great work! The equipment is connected. Now let\'s check how this system affects the rest of our Moon base.', priority: 'success' });
             soundFX.playSuccessChord();
@@ -741,15 +745,25 @@ export default function App() {
         />
       )}
 
-      {/* Focused Console Challenge Overlay */}
-      {activeChallenge && (
-        <ChallengeOverlay
-          challengeId={activeChallenge}
-          state={missionState}
-          onUpdateState={updateMissionState}
-          onClose={() => setActiveChallenge(null)}
-          onTriggerFinalStorm={handleTriggerFinalStorm}
-        />
+      {/* Child-first mission controls; expert simulation remains available on request. */}
+      {activeChallenge && (advancedConsole
+        ? <><ChallengeOverlay
+            challengeId={activeChallenge}
+            state={missionState}
+            onUpdateState={updateMissionState}
+            onClose={() => {setActiveChallenge(null);setAdvancedConsole(false);}}
+            onTriggerFinalStorm={handleTriggerFinalStorm}
+          />
+          <button type="button" onClick={()=>setAdvancedConsole(false)} className="fixed bottom-5 left-5 z-[70] rounded-xl border border-[#a8d3df] bg-[#153a4e] px-4 py-3 text-sm font-bold text-white hover:bg-[#286079]">← Junior mode</button>
+          </>
+        : <KidFriendlyConsole
+            challengeId={activeChallenge}
+            state={missionState}
+            onUpdateState={updateMissionState}
+            onClose={() => setActiveChallenge(null)}
+            onTriggerFinalStorm={handleTriggerFinalStorm}
+            onOpenAdvanced={() => setAdvancedConsole(true)}
+          />
       )}
 
       {/* Final Mission Debrief */}
