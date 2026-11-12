@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { TrainingWallExhibit } from './TrainingWallExhibit';
-import { LunarArtPass } from './LunarArtPass';
 import { LunarWonderArchitecture } from './LunarWonderArchitecture';
 import { PremiumBulkheads } from './PremiumBulkheads';
 import { HubDressing } from './HubDressing';
@@ -127,7 +126,6 @@ export class HabitatBuilder {
       mesh: dressing.telescope,
     });
     if (!this.isSoftwareGl) {
-      new LunarArtPass(scene);
       new LunarWonderArchitecture(scene);
       new PremiumBulkheads(scene);
     }
@@ -699,8 +697,9 @@ export class HabitatBuilder {
       map: wallMap,
       bumpMap: wallBump,
       bumpScale: 0.04,
-      roughness: 0.38,
-      metalness: 0.15,
+      color: 0xa5b3bb,
+      roughness: 0.68,
+      metalness: 0.11,
     });
 
     this.matMoonstoneGray = new THREE.MeshStandardMaterial({
@@ -730,9 +729,9 @@ export class HabitatBuilder {
     });
 
     this.matBrushedSteel = new THREE.MeshStandardMaterial({
-      color: 0xc5d0d6,
-      roughness: 0.22,
-      metalness: 0.88,
+      color: 0x9daeb8,
+      roughness: 0.42,
+      metalness: 0.70,
     });
 
     this.matHazardStripe = new THREE.MeshStandardMaterial({
@@ -744,15 +743,15 @@ export class HabitatBuilder {
     this.matEmissiveLightBar = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       emissive: 0xfff5eb,
-      emissiveIntensity: 1.8,
-      roughness: 0.1,
+      emissiveIntensity: 0.98,
+      roughness: 0.25,
     });
 
     this.matEmissiveBlueBar = new THREE.MeshStandardMaterial({
       color: 0x76aec9,
       emissive: 0x76aec9,
-      emissiveIntensity: 1.6,
-      roughness: 0.1,
+      emissiveIntensity: 0.85,
+      roughness: 0.28,
     });
 
     this.matTechnicalBlue = new THREE.MeshStandardMaterial({
@@ -801,11 +800,11 @@ export class HabitatBuilder {
 
   private buildLightingAndExterior(): void {
     // Rich ambient fill light for deep atmospheric contrast
-    const hemiLight = new THREE.HemisphereLight(0x28384a, 0x0a1017, 0.48);
+    const hemiLight = new THREE.HemisphereLight(0x6b8494, 0x0d1a25, 0.34);
     this.scene.add(hemiLight);
 
     // Direct lunar South Pole grazing sunlight (sharp shadows through observation window)
-    const sunLight = new THREE.DirectionalLight(0xfff3db, 2.0);
+    const sunLight = new THREE.DirectionalLight(0xffe9cf, 1.38);
     sunLight.position.set(45, 18, -45);
     sunLight.castShadow = !this.isSoftwareGl;
     sunLight.shadow.mapSize.set(1024, 1024);
@@ -1281,7 +1280,7 @@ export class HabitatBuilder {
         const hazardBanner = new THREE.Mesh(
           new THREE.BoxGeometry(
             isZWall ? doorWidth : wallThickness + 0.04,
-            0.18,
+            0.08,
             isZWall ? wallThickness + 0.04 : doorWidth
           ),
           this.matHazardStripe
@@ -1329,9 +1328,10 @@ export class HabitatBuilder {
     chandelier.add(octRing);
 
     const glowDiffuser = new THREE.Mesh(
-      new THREE.CylinderGeometry(2.35, 2.35, 0.18, 8, 1, true),
+      new THREE.TorusGeometry(2.18, 0.065, 8, 48),
       this.matEmissiveLightBar
     );
+    glowDiffuser.rotation.x = Math.PI / 2;
     chandelier.add(glowDiffuser);
     this.scene.add(chandelier);
 
@@ -1514,7 +1514,7 @@ export class HabitatBuilder {
       mesh: masterConsole,
     });
 
-    this.hubStatusLight = new THREE.PointLight(0x76aec9, 3.2, 18, 1.2);
+    this.hubStatusLight = new THREE.PointLight(0x76aec9, 1.6, 13, 1.8);
     this.hubStatusLight.position.set(0, 3.6, 0);
     this.scene.add(this.hubStatusLight);
   }
@@ -1654,7 +1654,7 @@ export class HabitatBuilder {
       });
 
       // Recessed linear LED ceiling light fixtures illuminating the corridor
-      const corridorLight = new THREE.PointLight(0xfff0dd, 2.0, 10, 1.4);
+      const corridorLight = new THREE.PointLight(0xffe5cc, 1.3, 8, 1.9);
       corridorLight.position.set(s.cx, 3.1, s.cz);
       this.scene.add(corridorLight);
 
@@ -1730,7 +1730,7 @@ export class HabitatBuilder {
   private buildPowerRoom(): void {
     this.buildRoomShell(0, -17.5, 13, 11, 4.2, { south: true });
 
-    this.powerCoreLight = new THREE.PointLight(0xe8ad66, 3.2, 20, 1.2);
+    this.powerCoreLight = new THREE.PointLight(0xe8ad66, 1.85, 14, 1.65);
     this.powerCoreLight.position.set(0, 3.6, -17.5);
     this.scene.add(this.powerCoreLight);
 
@@ -2024,7 +2024,7 @@ export class HabitatBuilder {
   private buildRadiationRoom(): void {
     this.buildRoomShell(0, 17.5, 13, 11, 4.2, { north: true });
 
-    this.radiationBeaconLight = new THREE.PointLight(0xde6f60, 3.4, 20, 1.2);
+    this.radiationBeaconLight = new THREE.PointLight(0xde6f60, 1.8, 14, 1.6);
     this.radiationBeaconLight.position.set(0, 3.6, 17.5);
     this.scene.add(this.radiationBeaconLight);
 
