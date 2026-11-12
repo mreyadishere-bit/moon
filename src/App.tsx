@@ -124,7 +124,7 @@ export default function App() {
     if (playerRef.current) {
       playerRef.current.setEnabled(!activeModalRef.current);
     }
-  }, [inMenu, activeChallenge, activeRepair, showAcademy, introCinematic, activeDialogue, showObservationModal, showScienceModal, showSettingsModal, showGuidebookModal, missionState.stormEvaluated]);
+  }, [inMenu, activeChallenge, activeRepair, showAcademy, introCinematic, activeCrew, showObservationModal, showScienceModal, showSettingsModal, showGuidebookModal, missionState.stormEvaluated]);
 
   const updateMissionState = useCallback(
     (
