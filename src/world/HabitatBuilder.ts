@@ -3,6 +3,7 @@ import { TrainingWallExhibit } from './TrainingWallExhibit';
 import { LunarWonderArchitecture } from './LunarWonderArchitecture';
 import { PremiumBulkheads } from './PremiumBulkheads';
 import { HubDressing } from './HubDressing';
+import { GuidePoint, createStationGuidePath, currentMissionGuideDestination } from '../game/GuidePath';
 import { soundFX } from '../audio/AudioManager';
 import { StationCrew } from '../characters/StationCrew';
 import { ChallengeId, MissionStateData } from '../game/MissionState';
@@ -76,6 +77,10 @@ export class HabitatBuilder {
   private guideTrailGroup = new THREE.Group();
   private guideTrailNodes: THREE.Mesh[] = [];
   private guideTrailTime = 0;
+  private guideRoute: GuidePoint[] = [];
+  private guideTarget: GuidePoint = {x:999,z:999};
+  private guideFrom: GuidePoint = {x:999,z:999};
+  private guideLastRoutedAt = -10;
 
   // Active Objective Beacon
   private objectiveBeacon = new THREE.Group();
@@ -1377,10 +1382,10 @@ export class HabitatBuilder {
       this.scene.add(strip);
     };
 
-    addFloorStrip(0, -6.5, 0.45, 10, this.matWarmAmber); // North -> Power
-    addFloorStrip(6.5, 0, 10, 0.45, this.matTechnicalBlue); // East -> Life Support
-    addFloorStrip(0, 6.5, 0.45, 10, this.matEmergencyCoral); // South -> Radiation
-    addFloorStrip(-6.5, 0, 10, 0.45, this.matHealthyGreen); // West -> Greenhouse
+    addFloorStrip(0, -6.5, 0.095, 9.4, this.matWarmAmber); // North -> Power
+    addFloorStrip(6.5, 0, 9.4, 0.095, this.matTechnicalBlue); // East -> Life Support
+    addFloorStrip(0, 6.5, 0.095, 9.4, this.matEmergencyCoral); // South -> Radiation
+    addFloorStrip(-6.5, 0, 9.4, 0.095, this.matHealthyGreen); // West -> Greenhouse
 
     // Corridor entrance signs above all 4 hub airlocks
     this.addCorridorSign(
@@ -2652,92 +2657,65 @@ export class HabitatBuilder {
   /* -------------------------------------------------------------------------- */
 
   private buildDynamicFloorGuideTrail(): void {
-    const nodeCount = 28;
-    const nodeGeo = new THREE.CylinderGeometry(0.24, 0.24, 0.02, 16);
-    const nodeMat = new THREE.MeshBasicMaterial({
-      color: 0x76aec9,
-      transparent: true,
-      opacity: 0.8,
-    });
-
-    for (let i = 0; i < nodeCount; i++) {
-      const node = new THREE.Mesh(nodeGeo, nodeMat.clone());
-      node.position.set(0, -10, 0); // hidden initially
+    // Small luminous footsteps rather than the previous oversized discs.
+    const nodeGeo = new THREE.CylinderGeometry(0.10,0.10,0.012,12);
+    for(let i=0;i<36;i++){
+      const node=new THREE.Mesh(nodeGeo,new THREE.MeshBasicMaterial({
+        color:0x8bcce1,transparent:true,opacity:0.63,depthWrite:false,
+      }));
+      node.position.set(0,-10,0);
+      node.visible=false;
       this.guideTrailNodes.push(node);
       this.guideTrailGroup.add(node);
     }
     this.scene.add(this.guideTrailGroup);
   }
 
-  private updateGuideTrail(dt: number, state: MissionStateData, playerPos: THREE.Vector3): void {
-    this.guideTrailTime += dt;
-    this.guideTrailGroup.visible = Boolean(state.guideTrailActive);
-    if (!this.guideTrailGroup.visible) return;
-
-    let waypoints: THREE.Vector3[] = [];
-
-    if (!state.stationLightsOn) {
-      waypoints = [
-        new THREE.Vector3(playerPos.x * 0.5, 0.04, playerPos.z * 0.5 + 0.5),
-        new THREE.Vector3(0, 0.04, 1.15),
-      ];
-    } else if (!state.power.completed) {
-      waypoints = [
-        new THREE.Vector3(0, 0.04, 0),
-        new THREE.Vector3(0, 0.04, -6.5),
-        new THREE.Vector3(0, 0.04, -12.0),
-        new THREE.Vector3(0, 0.04, -20.6),
-      ];
-    } else if (!state.lifeSupport.completed) {
-      waypoints = [
-        new THREE.Vector3(0, 0.04, 0),
-        new THREE.Vector3(6.5, 0.04, 0),
-        new THREE.Vector3(12.0, 0.04, 0),
-        new THREE.Vector3(20.6, 0.04, 0),
-      ];
-    } else if (!state.greenhouse.completed) {
-      waypoints = [
-        new THREE.Vector3(0, 0.04, 0),
-        new THREE.Vector3(-6.5, 0.04, 0),
-        new THREE.Vector3(-12.0, 0.04, 0),
-        new THREE.Vector3(-20.6, 0.04, 0),
-      ];
-    } else if (!state.radiation.completed) {
-      waypoints = [
-        new THREE.Vector3(0, 0.04, 0),
-        new THREE.Vector3(0, 0.04, 6.5),
-        new THREE.Vector3(0, 0.04, 12.0),
-        new THREE.Vector3(0, 0.04, 20.6),
-      ];
-    } else {
-      waypoints = [
-        new THREE.Vector3(playerPos.x * 0.5, 0.04, playerPos.z * 0.5),
-        new THREE.Vector3(0, 0.04, 1.15),
-      ];
+  private updateGuideTrail(dt:number,state:MissionStateData,playerPos:THREE.Vector3):void {
+    this.guideTrailTime+=dt;
+    this.guideTrailGroup.visible=Boolean(state.guideTrailActive);
+    if(!this.guideTrailGroup.visible)return;
+    const goal=currentMissionGuideDestination(state);
+    const moved=(playerPos.x-this.guideFrom.x)**2+(playerPos.z-this.guideFrom.z)**2>1.1**2;
+    const goalChanged=goal.x!==this.guideTarget.x||goal.z!==this.guideTarget.z;
+    if(goalChanged||moved||this.guideTrailTime-this.guideLastRoutedAt>2.5){
+      this.guideRoute=createStationGuidePath({x:playerPos.x,z:playerPos.z},goal);
+      this.guideFrom={x:playerPos.x,z:playerPos.z};
+      this.guideTarget=goal;
+      this.guideLastRoutedAt=this.guideTrailTime;
     }
-
-    const curve = new THREE.CatmullRomCurve3(waypoints, false, 'catmullrom', 0.1);
-    const trailHex =
-      !state.stationLightsOn ? 0x76aec9 :
-      !state.power.completed ? 0xe8ad66 :
-      !state.lifeSupport.completed ? 0x76aec9 :
-      !state.greenhouse.completed ? 0x77b89a :
-      !state.radiation.completed ? 0xde6f60 : 0x76aec9;
-
-    const count = this.guideTrailNodes.length;
-    for (let i = 0; i < count; i++) {
-      const u = i / (count - 1);
-      const pt = curve.getPoint(u);
-      const node = this.guideTrailNodes[i];
-      node.position.copy(pt);
-      node.position.y = 0.04;
-
-      const wave = Math.sin(this.guideTrailTime * 5.0 - u * Math.PI * 4);
-      const intensity = 0.4 + Math.max(0, wave) * 0.6;
-      const mat = node.material as THREE.MeshBasicMaterial;
-      mat.color.setHex(trailHex);
-      mat.opacity = intensity;
-      node.scale.setScalar(0.85 + Math.max(0, wave) * 0.35);
+    const route=this.guideRoute;
+    if(route.length<2){
+      this.guideTrailGroup.visible=false;
+      return;
+    }
+    const cumulative=[0];
+    for(let i=1;i<route.length;i++){
+      cumulative.push(cumulative[i-1]+Math.hypot(route[i].x-route[i-1].x,route[i].z-route[i-1].z));
+    }
+    const length=cumulative[cumulative.length-1];
+    if(length<=0.001){this.guideTrailGroup.visible=false;return;}
+    const color=!state.stationLightsOn?0x79c9d8:
+      !state.power.completed?0xe9ad65:
+      !state.lifeSupport.completed?0x79c9d8:
+      !state.greenhouse.completed?0x89be96:
+      !state.radiation.completed?0xb8a5dc:0x79c9d8;
+    const visibleCount=Math.min(this.guideTrailNodes.length,Math.ceil(length/.78));
+    for(let i=0;i<this.guideTrailNodes.length;i++){
+      const node=this.guideTrailNodes[i];
+      node.visible=i<visibleCount;
+      if(!node.visible)continue;
+      const travel=(i+.4)*length/Math.max(visibleCount,1);
+      let segment=1;
+      while(segment<cumulative.length-1&&cumulative[segment]<travel)segment++;
+      const start=route[segment-1],end=route[segment];
+      const part=Math.max(0,Math.min(1,(travel-cumulative[segment-1])/Math.max(.0001,cumulative[segment]-cumulative[segment-1])));
+      node.position.set(THREE.MathUtils.lerp(start.x,end.x,part),.04,THREE.MathUtils.lerp(start.z,end.z,part));
+      const wave=.72+.28*Math.sin(this.guideTrailTime*3.2-i*.62);
+      const mat=node.material as THREE.MeshBasicMaterial;
+      mat.color.setHex(color);
+      mat.opacity=wave*(i<3?.35:.68);
+      node.scale.setScalar(.86+.12*wave);
     }
   }
 
