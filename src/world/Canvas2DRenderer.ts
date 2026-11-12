@@ -253,6 +253,7 @@ export class Canvas2DRenderer {
       lifesupport: state.lifeSupport.completed ? '#77B89A' : '#76AEC9',
       radiation: state.radiation.completed ? '#77B89A' : '#DE6F60',
       greenhouse: '#77B89A',
+      planetarium: '#9eb9df',
     };
 
     const roomBoxes: Array<{
@@ -267,6 +268,7 @@ export class Canvas2DRenderer {
       { id: 'lifesupport', cx: 17.5, cz: 0, rx: 5.4, rz: 6.2 },
       { id: 'radiation', cx: 0, cz: 17.5, rx: 6.2, rz: 5.4 },
       { id: 'greenhouse', cx: -17.5, cz: 0, rx: 5.4, rz: 6.2 },
+      { id: 'planetarium', cx: 17.5, cz: 17.5, rx: 5.4, rz: 5.4 },
     ];
 
     roomBoxes.forEach((b) => {
