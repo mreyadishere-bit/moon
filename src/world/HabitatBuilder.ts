@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { TrainingWallExhibit } from './TrainingWallExhibit';
 import { LunarArtPass } from './LunarArtPass';
 import { soundFX } from '../audio/AudioManager';
 import { StationCrew } from '../characters/StationCrew';
@@ -8,7 +9,7 @@ export interface InteractiveTarget {
   id: string;
   title: string;
   subtitle: string;
-  actionType: 'open_challenge' | 'physical_toggle' | 'dialogue' | 'observation';
+  actionType: 'open_challenge' | 'physical_toggle' | 'dialogue' | 'observation' | 'academy';
   challengeId?: ChallengeId;
   characterId?: 'maya' | 'leo' | 'sprout';
   position: THREE.Vector3;
@@ -105,6 +106,7 @@ export class HabitatBuilder {
     this.initMaterials();
     this.buildLightingAndExterior();
     this.buildCentralHub();
+    this.buildScienceAcademyKiosk();
     this.buildCorridorsAndDoors();
     this.buildPowerRoom();
     this.buildLifeSupportRoom();
@@ -119,6 +121,11 @@ export class HabitatBuilder {
     // Crew Characters
     this.crew = new StationCrew(scene);
     this.registerCrewInteractives();
+  }
+
+  private buildScienceAcademyKiosk(): void {
+    const station = new TrainingWallExhibit(this.scene);
+    this.interactives.push({id:'academy_hub', title:'Astronaut Science Academy',subtitle:'Open the interactive learning adventure [E]',actionType:'academy', position:station.interactionPoint,mesh:station.group});
   }
 
   private registerCrewInteractives(): void {
