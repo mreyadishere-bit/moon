@@ -27,7 +27,26 @@ export const FACTS:Fact[]=[
  {test:/machine|what is this|what.s this|device|button|object|console|equipment/i,answer:(ctx)=>ctx.nearby?`You're looking at ${ctx.nearby}. Walk a little closer and press E to interact. Ask which part you want explained — I can help with the science behind it.`:`Look at a nearby device until its name appears, then ask me again. You can also explore any room using the mission map.`,topics:['equipment','interaction']},
 ];
 export function localCrewAnswer(character:CrewId, question:string, ctx:CrewContext):{text:string;source?:string}{
- const q=question.slice(0,500);
+ const q=question.slice(0,500).trim();
+ // Resolve references to PLACE before references to OBJECTS. A child asking
+ // "what is this room?" must not receive a description of the nearby NPC.
+ const room=ctx.room.toLowerCase().replace(/[_-]/g,'');
+ const rooms:Record<string,string>={
+  hub:'This is our Mission Hub: the station\'s meeting and control room. From here you can check the Moon base and choose which problem to solve next. The glowing table helps us see what needs attention.',
+  power:'Welcome to the Power Core! The solar panels outside collect sunlight, and the batteries store electricity for our lights, pumps, air systems, and experiments. Try the power console to balance what the station needs.',
+  lifesupport:'This is our Life Support Laboratory. It works a little like the station\'s lungs: fans move air around, carbon-dioxide filters help clean it, and water-recovery equipment saves precious water. Check the air console for a hands-on repair!',
+  greenhouse:'This is the Greenhouse, our little garden on the Moon! SPROUT grows plants using carefully controlled light, water, and nutrients. Experiment with the pumps and lamps to help our crops grow.',
+  radiation:'You\'re in the Radiation Shelter. During a simulated solar storm, we prepare this protected area so the crew can stay safe. Try adding shielding layers and find out why their materials matter.',
+  planetarium:'Welcome to our Solar System Observatory! That orbital sculpture is a teaching model, not a scale diagram. Use the Planet Explorer to compare all eight planets, try a gravity experiment, and race sunlight across space.'
+ };
+ if(/(?:what|which|tell me about|describe|explain).{0,28}(?:room|place|area)|where am i|what is here/i.test(q)) {
+   return {text:rooms[room]||'You are in our lunar station. Take a look around, and I can explain each room or help you find your next experiment.'};
+ }
+ if(/(?:what|tell me|explain).{0,25}(?:this|that|nearby).{0,16}(?:machine|thing|object|device|console)|what am i looking at/i.test(q)){
+  return {text:ctx.nearby&&!/^(Dr\.|Leo|SPROUT|PIX|NOVA|crew_)/i.test(ctx.nearby)
+   ?`That's ${ctx.nearby}. It belongs to the station's ${ctx.room} systems. Look at it and press E for a hands-on demonstration; you can ask me why it matters too.`
+   :'Try looking directly at the device until its name appears at the bottom of the screen, then ask me again. I won\'t pretend to see something you haven\'t shown me.'};
+ }
  const match=FACTS.find(f=>f.test.test(q));
  if(match)return {text:match.answer(ctx),source:match.url};
  if(/joke|funny|laugh|bored/i.test(q)){
